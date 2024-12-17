@@ -1,0 +1,26 @@
+# Entorno virtual
+venv/
+.env/
+
+# Archivos de base de datos SQLite
+*.db
+*.sqlite
+
+# Archivos de caché y logs
+__pycache__/
+*.log
+*.sqlite-journal
+
+# Archivos de configuración local
+.flaskenv
+*.env
+*.python-version
+
+# Archivos de configuración del IDE (VS Code, PyCharm, etc.)
+.vscode/
+.idea/
+
+# Archivos temporales de editores
+*~
+.DS_Store
+Thumbs.db
