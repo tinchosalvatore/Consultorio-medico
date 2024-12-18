@@ -24,3 +24,29 @@ __pycache__/
 *~
 .DS_Store
 Thumbs.db
+
+# Archivos de distribución/building
+dist/
+build/
+*.egg-info/
+
+# Coverage y testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Archivos específicos de Flask
+instance/
+
+# Archivos de migración de base de datos (si decides usar Flask-Migrate)
+migrations/
+
+# Archivos de media y uploads (para archivos de pacientes)
+uploads/
+media/
+
+# Archivos de respaldo
+*.bak
+*.swp
+*.swo
