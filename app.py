@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from sqlalchemy.orm import relationship
@@ -21,7 +21,10 @@ class Paciente(db.Model):
     apellido = db.Column(db.String(50), nullable=False)
     dni = db.Column(db.Integer, nullable=False, unique=True)
     mail = db.Column(db.String(50), nullable=True)
-    telefono = db.Column(db.String(20), nullable=False)  
+    telefono = db.Column(db.String(20), nullable=False)
+    domicilio = db.Column(db.String(50), nullable=False)
+    fecha_nacimiento = db.Column(db.DateTime, nullable=False)
+    ocupacion = db.Column(db.String(50), nullable=True)
     
     # Relaciones, back_populates es para evitar inconsistencias en la base de datos, actualizando los cambios bidireccionalmente
     turnos = relationship("Turno", back_populates="paciente")
@@ -41,7 +44,7 @@ class PacienteObraSocial(db.Model):
     
     paciente_id = db.Column(db.Integer, db.ForeignKey('pacientes.paciente_id'), primary_key=True)
     obra_social_id = db.Column(db.Integer, db.ForeignKey('obras_sociales.obra_social_id'), primary_key=True)
-    numero_obra_social = db.Column(db.Integer(50), nullable=True)  
+    numero_obra_social = db.Column(db.Integer, nullable=True)  
 
 class Turno(db.Model):
     __tablename__ = 'turnos'
@@ -60,14 +63,59 @@ class Turno(db.Model):
 # @app.route se utiliza para mapear rutas, esta lo que hace es mapear al index.html cuando se esta en la pagina principal
 @app.route('/')
 def home():
+
     return render_template('index.html') 
 
 #ruta para el input de busqueda de datos del paciente
 @app.route('/buscar_paciente', methods=['POST'])
 def buscar_paciente():
-    return # Despues ver el ejemplo del chatgpt
+    busqueda = request.form.get('busqueda')   # Obtenemos el valor del input
+
+    paciente = Paciente.query.filter(
+            (Paciente.nombre_paciente.ilike(f"%{busqueda}%")) |
+            (Paciente.apellido.ilike(f"%{busqueda}%")) |
+            (Paciente.dni.ilike(f"%{busqueda}%")) |
+            (Paciente.mail.ilike(f"%{busqueda}%")) |
+            (Paciente.telefono.ilike(f"%{busqueda}%"))
+            (Paciente.domicilio.ilike(f"%{busqueda}%")) |
+            (Paciente.fecha_nacimiento.ilike(f"%{busqueda}%")) |
+            (Paciente.ocupacion.ilike(f"%{busqueda}%"))
+        ).all()
+    
+    if not paciente:
+        return render_template('index.html', mensaje="No se encontro el paciente")
+
+    #Querry para obtener las obras sociales a las que el paciente es afiliado
+    obras_sociales = db.session.query(ObraSocial.nombre_obra_social,PacienteObraSocial.numero_obra_social).join
+    (PacienteObraSocial,ObraSocial.obra_social_id==PacienteObraSocial.obra_social_id).filter
+    (PacienteObraSocial.paciente_id==Paciente.paciente_id).all()
+
+# Obtener el turno más reciente, si es que existe
+    turno = Turno.query.filter_by(paciente_id=paciente.paciente_id).order_by(Turno.fecha.desc()).first()
+
+    resultado = {
+        'nombre': paciente.nombre_paciente,
+        'apellido': paciente.apellido,
+        'dni': paciente.dni,
+        'mail': paciente.mail,
+        'telefono': paciente.telefono,
+        'domicilio': paciente.domicilio,
+        'fecha_nacimiento': paciente.fecha_nacimiento.strftime("%d/%m/%Y"),
+        'ocupacion': paciente.ocupacion,
+        'turno': turno.fecha.strftime("%d/%m/%Y %H:%M") if turno else None,
+        'obras_sociales': obras_sociales
+    }
+
+    return render_template('index.html', paciente=resultado)
 
 
+@app.route('/agregar_paciente', methods=['POST'])
+def agregar_paciente():
+    ... #futuro develop
+
+
+
+    
 # Cada vez que cambiamos algo, el servidor se reinicia por si solo
 if __name__ == '__main__':
     app.run(debug=True)
