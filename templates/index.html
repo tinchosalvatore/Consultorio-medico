@@ -9,8 +9,6 @@
     <!-- Enlace hacia bootstrapCDN para los CSS-->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/lux/bootstrap.min.css"> 
 
-
-
     <!-- Enlace hacia el archivo CSS propio-->
     <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}"> 
 </head>
@@ -21,15 +19,27 @@
         <h1 class="display-2 text-center mt-4">
             Consultorio
         </h1>
+
         <h2 class="display-4 text-center mt-4">
             Salvatore, Rivero
         </h2>
 
         <div class="row">
-            <div class="col-md-5 offset-md-3 my-auto">
+            <div class="col-md-6 offset-md-3 my-auto">
                 <div class=" card">
                     <div class="card-header">
-                    
+                        <form action="">
+                            <div class="form-group">
+                                <!-- Los datos que ingresen a este input son usados para buscar en la base de datos -->
+                                <!-- Son llamados en app.py como request.form['busqueda'], ya que es el name que recibio el input -->
+                                <input type="text" name= "busqueda" placeholder="Ingrese un dato del paciente" class="form-control" autofocus>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-block" >
+                                Buscar
+                            </button>
+                        
+                        </form>
                     </div>
                     <div class="card-body">
 
