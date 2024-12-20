@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from sqlalchemy.orm import relationship
@@ -111,13 +111,12 @@ def buscar_paciente():
 
     # Si no hay resultados, se muestra un mensaje de alerta, no se muestra en caso de que si haya resultados
     mensaje = "No se encontraron pacientes con esa busqueda" if not resultados else None
-    return render_template('index.html', resultados_busqueda=resultados, mensaje=mensaje)
-
+    return render_template('index.html', resultados_busqueda=resultados, mensaje=mensaje) and redirect(url_for('home'))
 
  # funcion para agregar un nuevo paciente a la base de datos
 @app.route('/agregar_paciente', methods=['POST'])
 def agregar_paciente():
-    ... #futuro develop
+    Paciente()
 
 
 
