@@ -42,7 +42,35 @@
                         </form>
                     </div>
                     <div class="card-body">
-
+                        <div class="container mt-4">
+                            <!-- Mensaje de búsqueda -->
+                            {% if mensaje %}
+                                <div class="alert alert-warning" role="alert">
+                                    {{ mensaje }}
+                                </div>
+                            {% endif %}
+                        
+                            <!-- Resultados de la búsqueda -->
+                            {% if resultados_busqueda %}
+                                <div class="list-group">
+                                    {% for paciente in resultados_busqueda %}
+                                        <div class="list-group-item">
+                                            <h5>{{ paciente.nombre }} {{ paciente.apellido }}</h5>
+                                            <p>DNI: {{ paciente.dni }}</p>
+                                            <p>Teléfono: {{ paciente.telefono }}</p>
+                                            <p>Obras Sociales: 
+                                                {% for obra_social in paciente.obras_sociales %}
+                                                    {{ obra_social[0] }} (N° {{ obra_social[1] }})
+                                                {% endfor %}
+                                            </p>
+                                            <p>Próximo turno: {{ paciente.turno if paciente.turno else "No hay turnos" }}</p>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-muted">No hay resultados para mostrar.</p>
+                            {% endif %}
+                        </div> 
                     </div>
             </div>
         </div>

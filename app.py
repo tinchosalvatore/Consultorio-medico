@@ -63,36 +63,38 @@ class Turno(db.Model):
 # @app.route se utiliza para mapear rutas, esta lo que hace es mapear al index.html cuando se esta en la pagina principal
 @app.route('/')
 def home():
-
-    return render_template('index.html') 
+    # hacemos un getter para obtener los resultados de la busqueda de pacientes
+    return render_template('index.html', resultados_busqueda=[], mensaje=None)
 
 #ruta para el input de busqueda de datos del paciente
 @app.route('/buscar_paciente', methods=['POST'])
 def buscar_paciente():
-    busqueda = request.form.get('busqueda')   # Obtenemos el valor del input
+    busqueda = request.form.get('busqueda')   # obtenemos los datos de la busqueda, del input del html
 
-    paciente = Paciente.query.filter(
+    # Query para obtener los pacientes que coincidan con la busqueda
+    pacientes = Paciente.query.filter(
             (Paciente.nombre_paciente.ilike(f"%{busqueda}%")) |
             (Paciente.apellido.ilike(f"%{busqueda}%")) |
             (Paciente.dni.ilike(f"%{busqueda}%")) |
             (Paciente.mail.ilike(f"%{busqueda}%")) |
-            (Paciente.telefono.ilike(f"%{busqueda}%"))
+            (Paciente.telefono.ilike(f"%{busqueda}%")) |
             (Paciente.domicilio.ilike(f"%{busqueda}%")) |
-            (Paciente.fecha_nacimiento.ilike(f"%{busqueda}%")) |
             (Paciente.ocupacion.ilike(f"%{busqueda}%"))
         ).all()
     
-    if not paciente:
-        return render_template('index.html', mensaje="No se encontro el paciente")
 
-    #Querry para obtener las obras sociales a las que el paciente es afiliado
-    obras_sociales = db.session.query(ObraSocial.nombre_obra_social,PacienteObraSocial.numero_obra_social).join
-    (PacienteObraSocial,ObraSocial.obra_social_id==PacienteObraSocial.obra_social_id).filter
-    (PacienteObraSocial.paciente_id==Paciente.paciente_id).all()
+    resultados = []
+    for paciente in pacientes:
+    # Query para obtener las obras sociales a las que el paciente es afiliado
+    
+        obras_sociales = db.session.query(ObraSocial.nombre_obra_social,PacienteObraSocial.numero_obra_social).join
+        (PacienteObraSocial,ObraSocial.obra_social_id == PacienteObraSocial.obra_social_id).filter
+        (PacienteObraSocial.paciente_id == Paciente.paciente_id).all()
 
-# Obtener el turno más reciente, si es que existe
-    turno = Turno.query.filter_by(paciente_id=paciente.paciente_id).order_by(Turno.fecha.desc()).first()
+# obtener el turno más reciente, si es que existe
+    turno = Turno.query.filter_by(paciente_id = paciente.paciente_id).order_by(Turno.fecha.desc()).first()
 
+    #Lista con los resultados de la busqueda para mostrarlos en la página
     resultado = {
         'nombre': paciente.nombre_paciente,
         'apellido': paciente.apellido,
@@ -105,10 +107,14 @@ def buscar_paciente():
         'turno': turno.fecha.strftime("%d/%m/%Y %H:%M") if turno else None,
         'obras_sociales': obras_sociales
     }
+    resultados.append(resultado)
 
-    return render_template('index.html', paciente=resultado)
+    # Si no hay resultados, se muestra un mensaje de alerta, no se muestra en caso de que si haya resultados
+    mensaje = "No se encontraron pacientes con esa busqueda" if not resultados else None
+    return render_template('index.html', resultados_busqueda=resultados, mensaje=mensaje)
 
 
+ # funcion para agregar un nuevo paciente a la base de datos
 @app.route('/agregar_paciente', methods=['POST'])
 def agregar_paciente():
     ... #futuro develop
