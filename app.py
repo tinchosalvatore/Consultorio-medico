@@ -7,12 +7,11 @@ from sqlalchemy.orm import relationship
 #Llama a flask como app
 app = Flask(__name__)
 #ruta de la base de datos para que SQLAlchemy pueda conectarse
-app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///database/consultorio.db"
+app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///consultorio.db"
 #Nos permite crear consultas en SQL con SQLAlchemy
 db = SQLAlchemy(app)
 
 #Aca creamos la base de datos de los pacientes, usando clases como tablas
-
 class Paciente(db.Model):
     __tablename__ = 'pacientes'  
     
@@ -57,6 +56,11 @@ class Turno(db.Model):
     # Relaciones
     paciente = relationship("Paciente", back_populates="turnos")
 
+    # Esta funcion inicializa la base de datos
+def init_db():
+    with app.app_context():
+        db.create_all()
+        print("Base de datos creada correctamente")
 
 
 #RUTAS
@@ -112,7 +116,7 @@ def buscar_paciente():
 
     # Si no hay resultados, se muestra un mensaje de alerta, no se muestra en caso de que si haya resultados
     mensaje = "No se encontraron pacientes con esa busqueda" if not resultados else None
-    return render_template('index.html', resultados_busqueda=resultados, mensaje=mensaje) and redirect(url_for('home'))
+    return render_template('index.html', resultados_busqueda=resultados, mensaje=mensaje)
 
 # Ruta para la navegacion de index.html a nuevo_paciente.html
 @app.route('/nuevo_paciente')
@@ -129,7 +133,7 @@ def agregar_paciente():
     mail = request.form.get('mail')
     telefono = request.form.get('telefono')
     domicilio = request.form.get('domicilio')
-    fecha_nacimiento = request.form.get('fecha_nacimiento') 
+    fecha_nacimiento = datetime.strptime(request.form.get('fecha_nacimiento'), '%Y-%m-%d')
     ocupacion = request.form.get('ocupacion')
     
     # Creamos el nuevo paciente con los datos recibidos
@@ -160,7 +164,7 @@ def mostrar_turnos():
 
     # Ruta para asignar un turno a un paciente
 @app.route('/asignar_turno/<int:turno_id>', methods=['POST'])
-def asignar_turno():
+def asignar_turno(turno_id):
     # Obtenemos los datos del formulario
     paciente_id = request.form.get('paciente_id')
 
@@ -174,10 +178,9 @@ def asignar_turno():
     else:
         mensaje_fail = "Turno no disponible"
         return render_template('turnos.html', mensaje=mensaje_fail)
+    
 
-
-# Cada vez que cambiamos algo, el servidor se reinicia por si solo
+# Cada vez que cambiamos algo, el servidor se reinicia por si solo. Ademas llamamos al init de la base de datos
 if __name__ == '__main__':
+    init_db()
     app.run(debug=True)
-    #db.create_all()
-    #print ("Base de datos creada correctamente")    
