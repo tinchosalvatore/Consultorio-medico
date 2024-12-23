@@ -28,7 +28,7 @@
             <div class="col-md-6 offset-md-3 my-auto">
                 <div class=" card">
                     <div class="card-header">
-                        <form action="">
+                        <form action="/buscar_paciente" method="post"> <!-- Envia el input a la app route buscar_paciente -->
                             <div class="form-group">
                                 <!-- Los datos que ingresen a este input son usados para buscar en la base de datos -->
                                 <!-- Son llamados en app.py como request.form['busqueda'], ya que es el name que recibio el input -->
@@ -42,11 +42,81 @@
                         </form>
                     </div>
                     <div class="card-body">
-
+                        <div class="container mt-4">
+                            <!-- Alert Messages -->
+                            {% if mensaje %}
+                            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                                {{ mensaje }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            {% endif %}
+                    
+                            <!-- Search Results -->
+                            {% if resultados_busqueda %}
+                            <div class="row g-4">
+                                {% for paciente in resultados_busqueda %}
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="card h-100 shadow-sm">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h5 class="card-title mb-0">{{ paciente.nombre }} {{ paciente.apellido }}</h5>
+                                            <span class="badge bg-primary">DNI: {{ paciente.dni }}</span>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="list-unstyled mb-0">
+                                                <li class="mb-2">
+                                                    <i class="bi bi-telephone-fill me-2"></i>
+                                                    {{ paciente.telefono }}
+                                                </li>
+                                                <li class="mb-2">
+                                                    <i class="bi bi-envelope-fill me-2"></i>
+                                                    {{ paciente.mail if paciente.mail else "No registrado" }}
+                                                </li>
+                                                <li class="mb-3">
+                                                    <strong>Obras Sociales:</strong>
+                                                    <ul class="list-unstyled ms-3 mt-1">
+                                                        {% for obra_social in paciente.obras_sociales %}
+                                                        <li class="badge bg-secondary me-1">
+                                                            {{ obra_social[0] }} 
+                                                            <small>(N° {{ obra_social[1] }})</small>
+                                                        </li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="card-footer">
+                                            <div class="d-flex align-items-center">
+                                                <i class="bi bi-calendar-event me-2"></i>
+                                                <span class="{% if paciente.turno %}text-success{% else %}text-muted{% endif %}">
+                                                    {{ paciente.turno if paciente.turno else "Sin turnos programados" }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="text-center py-5">
+                                <i class="bi bi-search display-1 text-muted"></i>
+                                <p class="lead text-muted mt-3">No se encontraron resultados para mostrar.</p>
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
             </div>
-        </div>
-
+        </div>        
     </main>
+
+    <!-- Boton para dirigir a pagina de agregar paciente -->
+    <div class="text-center mt-4">
+        <a href="/nuevo_paciente" class="btn btn-primary">Agregar Paciente</a>
+    </div>    
+
 </body>
 </html>
+
+
+<main class="container">
+        
+</main>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agregar Paciente</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/lux/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static',filename='main.css') }}">
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="text-center">Agregar Nuevo Paciente</h1>
+                <!-- Envia los datos a la ruta agregar_paciente -->
+        <form action="/agregar_paciente" method="post">
+                <!-- Nombre -->
+            <div class="form-group">
+                <label for="nombre">Nombre</label>
+                <input type="text" name="nombre" id="nombre" class="form-control" required>
+            </div>
+                <!-- Apellido -->
+            <div class="form-group">
+                <label for="apellido">Apellido</label>
+                <input type="text" name="apellido" id="apellido" class="form-control" required>
+            </div>
+                <!-- DNI -->
+            <div class="form-group">
+                <label for="dni">DNI</label>
+                <input type="number" name="dni" id="dni" class="form-control" required>
+            </div>
+                <!-- mail -->
+            <div class="form-group">
+                <label for="mail">Mail</label>
+                <input type="text" name="mail" id="mail" class="form-control" required>
+            </div>
+                <!-- telefono -->
+            <div class="form-group">
+                <label for="telefono">Telefono</label>
+                <input type="text" name="telefono" id="telefono" class="form-control" required>
+            </div>
+                <!-- domicilio -->
+            <div class="form-group">
+                <label for="domicilio">Domicilio</label>
+                <input type="text" name="domicilio" id="domicilio" class="form-control" required>
+            </div>
+                <!-- fecha nacimiento -->
+            <div class="form-group">
+                <label for="fecha_nacimiento">Fecha de nacimiento</label>
+                <input type="text" name="fecha_nacimiento" id="fecha_nacimiento" class="form-control" required>
+            </div>
+
+            <!-- ocupacion -->
+            <div class="form-group">
+                <label for="ocupacion">Ocupacion</label>
+                <input type="text" name="ocupacion" id="ocupacion" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-success btn-block">Agregar Paciente</button>
+        </form>
+    </div>
+</body>
+</html>
