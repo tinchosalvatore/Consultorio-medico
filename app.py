@@ -51,7 +51,8 @@ class Turno(db.Model):
     
     turno_id = db.Column(db.Integer, primary_key=True)
     paciente_id = db.Column(db.Integer, db.ForeignKey('pacientes.paciente_id'), nullable=False)
-    fecha = db.Column(db.DateTime, nullable=False)  # Cambiado a DateTime para incluir hora
+    fecha = db.Column(db.DateTime, nullable=False)
+    ocupado = db.Column(db.Boolean, default=False, nullable=False)
     
     # Relaciones
     paciente = relationship("Paciente", back_populates="turnos")
@@ -149,10 +150,34 @@ def agregar_paciente():
     mensaje = "El paciente se agrego correctamente"
     return render_template('agregar_paciente.html', mensaje=mensaje)
 
+    # Ruta para la navegacion de index.html a turnos.html
+@app.route('/turnos')
+def mostrar_turnos():
+    # Obtenemos los turnos libres y ocupados y los pasamos a la plantilla de turnos.html como variables
+    turnos_libres = Turno.query.filter_by(ocupado=False).all()
+    turnos_ocupados = Turno.query.filter_by(ocupado=True).all()
+    return render_template('turnos.html', turnos_libres=turnos_libres, turnos_ocupados=turnos_ocupados)
+
+    # Ruta para asignar un turno a un paciente
+@app.route('/asignar_turno/<int:turno_id>', methods=['POST'])
+def asignar_turno():
+    # Obtenemos los datos del formulario
+    paciente_id = request.form.get('paciente_id')
+
+    turno = Turno.query.get(turno_id)
+    if turno and turno.ocupado == False:
+        turno.paciente_id = paciente_id
+        turno.ocupado = True
+        db.session.commit()
+        mensaje = "Turno asignado correctamente"
+        return render_template('turnos.html', mensaje=mensaje)
+    else:
+        mensaje_fail = "Turno no disponible"
+        return render_template('turnos.html', mensaje=mensaje_fail)
 
 
-
-    
 # Cada vez que cambiamos algo, el servidor se reinicia por si solo
 if __name__ == '__main__':
     app.run(debug=True)
+    #db.create_all()
+    #print ("Base de datos creada correctamente")    
