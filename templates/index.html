@@ -105,37 +105,18 @@
                         </div>
                     </div>
             </div>
-        </div>
-
-
-        
-        
+        </div>        
     </main>
 
-    <!-- Agregar paciente -->
-
-    <main class="container pd-4">
-        <div class="row">
-            <div class="col-md-6 offset-md-3 my-auto">
-                <div class=" card">
-                    <div class="card-header">
-                        <form action="/agregar_paciente" method="post"> <!-- Envia el input a la app route buscar_paciente -->
-                            <div class="form-group">
-                                <!-- Los datos que ingresen a este input son usados para buscar en la base de datos -->
-                                <!-- Son llamados en app.py como request.form['busqueda'], ya que es el name que recibio el input -->
-                                <input type="text" name= "agregar_paciente" placeholder="Ingrese los datos del paciente" class="form-control" autofocus>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary btn-block" >
-                                Buscar
-                            </button>
-                        
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>   
-    </main>
+    <!-- Boton para dirigir a pagina de agregar paciente -->
+    <div class="text-center mt-4">
+        <a href="/nuevo_paciente" class="btn btn-primary">Agregar Paciente</a>
+    </div>    
 
 </body>
 </html>
+
+
+<main class="container">
+        
+</main>

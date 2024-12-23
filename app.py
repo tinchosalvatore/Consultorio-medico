@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from sqlalchemy.orm import relationship
@@ -113,10 +113,42 @@ def buscar_paciente():
     mensaje = "No se encontraron pacientes con esa busqueda" if not resultados else None
     return render_template('index.html', resultados_busqueda=resultados, mensaje=mensaje) and redirect(url_for('home'))
 
+# Ruta para la navegacion de index.html a nuevo_paciente.html
+@app.route('/nuevo_paciente')
+def nuevo_paciente():
+    return render_template('nuevo_paciente.html')
+
  # funcion para agregar un nuevo paciente a la base de datos
 @app.route('/agregar_paciente', methods=['POST'])
 def agregar_paciente():
-    Paciente()
+    # Obtenemos los datos del formulario
+    nombre = request.form.get('nombre')
+    apellido = request.form.get('apellido')
+    dni = request.form.get('dni')
+    mail = request.form.get('mail')
+    telefono = request.form.get('telefono')
+    domicilio = request.form.get('domicilio')
+    fecha_nacimiento = request.form.get('fecha_nacimiento') 
+    ocupacion = request.form.get('ocupacion')
+    
+    # Creamos el nuevo paciente con los datos recibidos
+    paciente = Paciente(
+        nombre_paciente=nombre,
+        apellido=apellido,
+        dni=dni,
+        mail=mail,
+        telefono=telefono,
+        domicilio=domicilio,
+        fecha_nacimiento=fecha_nacimiento,
+        ocupacion=ocupacion
+        )
+    db.session.add(paciente)
+    db.session.commit()
+
+
+    mensaje = "El paciente se agrego correctamente"
+    return render_template('agregar_paciente.html', mensaje=mensaje)
+
 
 
 
