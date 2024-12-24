@@ -10,6 +10,14 @@
 <body>
     <div class="container mt-4">
         <h1 class="text-center">Agregar Nuevo Paciente</h1>
+
+        <!-- Mostrar el mensaje si está definido -->
+    {% if mensaje %}
+    <div class="alert alert-success text-center">
+        {{ mensaje }}
+    </div>
+    {% endif %}
+
                 <!-- Envia los datos a la ruta agregar_paciente -->
         <form action="/agregar_paciente" method="post">
                 <!-- Nombre -->
@@ -56,6 +64,11 @@
 
             <button type="submit" class="btn btn-success btn-block">Agregar Paciente</button>
         </form>
+    </div>
+
+    <!-- Boton para volver al menu principal -->
+    <div class="text-center mt-4">
+        <a href="/" class="btn btn-primary">Volver al menu</a>
     </div>
 </body>
 </html>
