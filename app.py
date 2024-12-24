@@ -150,7 +150,7 @@ def agregar_paciente():
     db.session.add(paciente)
     db.session.commit()
 
-
+    # Confirmamos que el paciente se agrego correctamente
     mensaje = "El paciente se agrego correctamente"
     return render_template('nuevo_paciente.html', mensaje=mensaje)
 
