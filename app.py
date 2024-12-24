@@ -152,7 +152,7 @@ def agregar_paciente():
 
 
     mensaje = "El paciente se agrego correctamente"
-    return render_template('agregar_paciente.html', mensaje=mensaje)
+    return render_template('nuevo_paciente.html', mensaje=mensaje)
 
     # Ruta para la navegacion de index.html a turnos.html
 @app.route('/turnos')
