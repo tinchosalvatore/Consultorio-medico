@@ -60,7 +60,6 @@ class Turno(db.Model):
 def init_db():
     with app.app_context():
         db.create_all()
-        print("Base de datos creada correctamente")
 
 
 #RUTAS
@@ -92,9 +91,15 @@ def buscar_paciente():
     for paciente in pacientes:
     # Query para obtener las obras sociales a las que el paciente es afiliado
     
-        obras_sociales = db.session.query(ObraSocial.nombre_obra_social,PacienteObraSocial.numero_obra_social).join
-        (PacienteObraSocial,ObraSocial.obra_social_id == PacienteObraSocial.obra_social_id).filter
-        (PacienteObraSocial.paciente_id == Paciente.paciente_id).all()
+        obras_sociales = db.session.query(
+    ObraSocial.nombre_obra_social, 
+    PacienteObraSocial.numero_obra_social
+    ).join(
+        PacienteObraSocial, ObraSocial.obra_social_id == PacienteObraSocial.obra_social_id
+    ).filter(
+        PacienteObraSocial.paciente_id == paciente.paciente_id
+    ).all()
+
 
 # obtener el turno más reciente, si es que existe
     turno = Turno.query.filter_by(paciente_id = paciente.paciente_id).order_by(Turno.fecha.desc()).first()

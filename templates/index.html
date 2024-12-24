@@ -42,68 +42,84 @@
                         </form>
                     </div>
                     <div class="card-body">
-                        <div class="container mt-4">
-                            <!-- Alert Messages -->
-                            {% if mensaje %}
-                            <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                                {{ mensaje }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <div class="container mt-4">
+                {% if resultados_busqueda %}
+                <div class="row g-4">
+                    {% for paciente in resultados_busqueda %}
+                    <div class="col-12 col-md-6 col-lg-4 mb-4">
+                        <div class="card patient-card shadow-sm">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title mb-0">
+                                        <i class="bi bi-person-circle me-2"></i>
+                                        {{ paciente.nombre }} {{ paciente.apellido }}
+                                    </h5>
+                                    <span class="badge bg-primary">DNI: {{ paciente.dni }}</span>
+                                </div>
                             </div>
-                            {% endif %}
-                    
-                            <!-- Search Results -->
-                            {% if resultados_busqueda %}
-                            <div class="row g-4">
-                                {% for paciente in resultados_busqueda %}
-                                <div class="col-md-6 col-lg-4">
-                                    <div class="card h-100 shadow-sm">
-                                        <div class="card-header d-flex justify-content-between align-items-center">
-                                            <h5 class="card-title mb-0">{{ paciente.nombre }} {{ paciente.apellido }}</h5>
-                                            <span class="badge bg-primary">DNI: {{ paciente.dni }}</span>
-                                        </div>
-                                        <div class="card-body">
-                                            <ul class="list-unstyled mb-0">
-                                                <li class="mb-2">
-                                                    <i class="bi bi-telephone-fill me-2"></i>
-                                                    {{ paciente.telefono }}
-                                                </li>
-                                                <li class="mb-2">
-                                                    <i class="bi bi-envelope-fill me-2"></i>
-                                                    {{ paciente.mail if paciente.mail else "No registrado" }}
-                                                </li>
-                                                <li class="mb-3">
-                                                    <strong>Obras Sociales:</strong>
-                                                    <ul class="list-unstyled ms-3 mt-1">
-                                                        {% for obra_social in paciente.obras_sociales %}
-                                                        <li class="badge bg-secondary me-1">
-                                                            {{ obra_social[0] }} 
-                                                            <small>(N° {{ obra_social[1] }})</small>
-                                                        </li>
-                                                        {% endfor %}
-                                                    </ul>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                        <div class="card-footer">
-                                            <div class="d-flex align-items-center">
-                                                <i class="bi bi-calendar-event me-2"></i>
-                                                <span class="{% if paciente.turno %}text-success{% else %}text-muted{% endif %}">
-                                                    {{ paciente.turno if paciente.turno else "Sin turnos programados" }}
-                                                </span>
+                            <div class="card-body">
+                                <ul class="list-unstyled patient-info-list">
+                                    <li>
+                                        <i class="bi bi-telephone me-2"></i>
+                                        <strong>Teléfono:</strong> 
+                                        <span class="float-end">{{ paciente.telefono }}</span>
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-envelope me-2"></i>
+                                        <strong>Email:</strong>
+                                        <span class="float-end">{{ paciente.mail if paciente.mail else "No registrado" }}</span>
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-geo-alt me-2"></i>
+                                        <strong>Domicilio:</strong>
+                                        <span class="float-end">{{ paciente.domicilio }}</span>
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-calendar-date me-2"></i>
+                                        <strong>Fecha de Nacimiento:</strong>
+                                        <span class="float-end">{{ paciente.fecha_nacimiento }}</span>
+                                    </li>
+                                    <li>
+                                        <i class="bi bi-briefcase me-2"></i>
+                                        <strong>Ocupación:</strong>
+                                        <span class="float-end">{{ paciente.ocupacion }}</span>
+                                    </li>
+                                </ul>
+                                
+                                <div class="mt-3">
+                                    <strong><i class="bi bi-shield-plus me-2"></i>Obras Sociales:</strong>
+                                    <div class="mt-2">
+                                        {% if paciente.obras_sociales %}
+                                            {% for obra_social in paciente.obras_sociales %}
+                                            <div class="insurance-badge">
+                                                {{ obra_social[0] }} 
+                                                <small class="ms-1">(N° {{ obra_social[1] }})</small>
                                             </div>
-                                        </div>
+                                            {% endfor %}
+                                        {% else %}
+                                            <span class="text-muted">No registradas</span>
+                                        {% endif %}
                                     </div>
                                 </div>
-                                {% endfor %}
                             </div>
-                            {% else %}
-                            <div class="text-center py-5">
-                                <i class="bi bi-search display-1 text-muted"></i>
-                                <p class="lead text-muted mt-3">No se encontraron resultados para mostrar.</p>
+                            <div class="card-footer bg-transparent">
+                                <div class="appointment-status {% if paciente.turno %}status-scheduled{% else %}status-pending{% endif %}">
+                                    <i class="bi bi-calendar-event me-2"></i>
+                                    {{ paciente.turno if paciente.turno else "Sin turnos programados" }}
+                                </div>
                             </div>
-                            {% endif %}
                         </div>
                     </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-search display-1 text-muted"></i>
+                    <p class="lead text-muted mt-3">No se encontraron resultados para mostrar.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
             </div>
         </div>        
     </main>
