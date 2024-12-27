@@ -16,34 +16,27 @@ class Paciente(db.Model):
     __tablename__ = 'pacientes'  
     
     paciente_id = db.Column(db.Integer, primary_key=True)
+    medico = db.Column(db.String(50), nullable=True)
+    historia_clinica = db.Column(db.Integer, nullable=True)
     nombre_paciente = db.Column(db.String(50), nullable=False)
     apellido = db.Column(db.String(50), nullable=False)
-    dni = db.Column(db.Integer, nullable=False, unique=True)
+    dni = db.Column(db.Integer, nullable=True, unique=True)
+    libreta_civ = db.Column(db.Integer, nullable=True, unique=True)
+    sexo = db.Column(db.String(50), nullable=True)
     mail = db.Column(db.String(50), nullable=True)
-    telefono = db.Column(db.String(20), nullable=False)
-    domicilio = db.Column(db.String(50), nullable=False)
-    fecha_nacimiento = db.Column(db.DateTime, nullable=False)
+    telefono = db.Column(db.String(20), nullable=True)
+    telefono_celular = db.Column(db.String(20), nullable=True)
+    nacionalidad = db.Column(db.String(50), nullable=True)
+    domicilio = db.Column(db.String(50), nullable=True)
+    fecha_nacimiento = db.Column(db.DateTime, nullable=True)
     ocupacion = db.Column(db.String(50), nullable=True)
+    obra_social_1 = db.Column(db.String(50), nullable=True)
+    num_afiliado_1 = db.Column(db.Integer, nullable=True)
+    obra_social_2 = db.Column(db.String(50), nullable=True)
+    num_afiliado_2 = db.Column(db.Integer, nullable=True)
     
     # Relaciones, back_populates es para evitar inconsistencias en la base de datos, actualizando los cambios bidireccionalmente
     turnos = relationship("Turno", back_populates="paciente")
-    obras_sociales = relationship("ObraSocial", secondary="paciente_obra_social", back_populates="pacientes")
-
-class ObraSocial(db.Model):
-    __tablename__ = 'obras_sociales'
-    
-    obra_social_id = db.Column(db.Integer, primary_key=True)
-    nombre_obra_social = db.Column(db.String(50), nullable=False, unique=True)
-    
-    # Relaciones
-    pacientes = relationship("Paciente", secondary="paciente_obra_social", back_populates="obras_sociales")
-
-class PacienteObraSocial(db.Model):
-    __tablename__ = 'paciente_obra_social'
-    
-    paciente_id = db.Column(db.Integer, db.ForeignKey('pacientes.paciente_id'), primary_key=True)
-    obra_social_id = db.Column(db.Integer, db.ForeignKey('obras_sociales.obra_social_id'), primary_key=True)
-    numero_obra_social = db.Column(db.Integer, nullable=True)  
 
 class Turno(db.Model):
     __tablename__ = 'turnos'
@@ -59,9 +52,8 @@ class Turno(db.Model):
     # Esta funcion inicializa la base de datos
 def init_db():
     with app.app_context():
-        # db.create_all()
-        db.drop_all() 
-
+        db.create_all()
+        # db.drop_all() 
 
 #RUTAS
 
@@ -80,6 +72,7 @@ def buscar_paciente():
     pacientes = Paciente.query.filter(
             (Paciente.nombre_paciente.ilike(f"%{busqueda}%")) |
             (Paciente.apellido.ilike(f"%{busqueda}%")) |
+            (Paciente.libreta_civ.ilike(f"%{busqueda}%")) |
             (Paciente.dni.ilike(f"%{busqueda}%")) |
             (Paciente.mail.ilike(f"%{busqueda}%")) |
             (Paciente.telefono.ilike(f"%{busqueda}%")) |
@@ -90,28 +83,27 @@ def buscar_paciente():
 
     resultados = []
     for paciente in pacientes:
-    # Query para obtener las obras sociales a las que el paciente es afiliado
-    
-        obras_sociales = db.session.query(
-    ObraSocial.nombre_obra_social, 
-    PacienteObraSocial.numero_obra_social
-    ).join(
-        PacienteObraSocial, ObraSocial.obra_social_id == PacienteObraSocial.obra_social_id
-    ).filter(
-        PacienteObraSocial.paciente_id == paciente.paciente_id
-    ).all()
-
-
-# obtener el turno más reciente, si es que existe
-    turno = Turno.query.filter_by(paciente_id = paciente.paciente_id).order_by(Turno.fecha.desc()).first()
+            # Obtener el turno más reciente, si es que existe
+        turno = Turno.query.filter_by(paciente_id = paciente.paciente_id).order_by(Turno.fecha.desc()).first()
+        obras_sociales = []
+        if paciente.obra_social_1:
+            obras_sociales.append({'nombre': paciente.obra_social_1, 'num_afiliado': paciente.num_afiliado_1})
+        if paciente.obra_social_2:
+            obras_sociales.append({'nombre': paciente.obra_social_2, 'num_afiliado': paciente.num_afiliado_2})
 
     #Lista con los resultados de la busqueda para mostrarlos en la página
     resultado = {
+        'medico': paciente.medico,
+        'historia_clinica': paciente.historia_clinica,
         'nombre': paciente.nombre_paciente,
         'apellido': paciente.apellido,
         'dni': paciente.dni,
+        'libreta_civ': paciente.libreta_civ,
+        'sexo': paciente.sexo,
         'mail': paciente.mail,
         'telefono': paciente.telefono,
+        'telefono_celular': paciente.telefono_celular,
+        'nacionalidad': paciente.nacionalidad,
         'domicilio': paciente.domicilio,
         'fecha_nacimiento': paciente.fecha_nacimiento.strftime("%d/%m/%Y"),
         'ocupacion': paciente.ocupacion,
@@ -133,26 +125,47 @@ def nuevo_paciente():
 @app.route('/agregar_paciente', methods=['POST'])
 def agregar_paciente():
     # Obtenemos los datos del formulario
+    medico = request.form.get('medico')
+    historia_clinica = request.form.get('historia_clinica')
     nombre = request.form.get('nombre')
     apellido = request.form.get('apellido')
+    libreta_civ = request.form.get('libreta_civ')
     dni = request.form.get('dni')
+    sexo = request.form.get('sexo')
     mail = request.form.get('mail')
     telefono = request.form.get('telefono')
+    telefono_celular = request.form.get('telefono_celular')
+    nacionalidad = request.form.get('nacionalidad')
     domicilio = request.form.get('domicilio')
     fecha_nacimiento = datetime.strptime(request.form.get('fecha_nacimiento'), '%Y-%m-%d')
     ocupacion = request.form.get('ocupacion')
+    obra_social_1 = request.form.get('obras_sociales[0][nombre]')
+    num_afiliado_1 = request.form.get('obras_sociales[0][num_afiliado]')
+    obra_social_2 = request.form.get('obras_sociales[1][nombre]')
+    num_afiliado_2 = request.form.get('obras_sociales[1][num_afiliado]')
     
     # Creamos el nuevo paciente con los datos recibidos
     paciente = Paciente(
+        medico=medico,
+        historia_clinica=historia_clinica,
         nombre_paciente=nombre,
         apellido=apellido,
+        libreta_civ=libreta_civ,
         dni=dni,
+        sexo=sexo,
         mail=mail,
         telefono=telefono,
+        telefono_celular=telefono_celular,
+        nacionalidad=nacionalidad,
         domicilio=domicilio,
         fecha_nacimiento=fecha_nacimiento,
-        ocupacion=ocupacion
+        ocupacion=ocupacion,
+        obra_social_1=obra_social_1,
+        num_afiliado_1=num_afiliado_1,
+        obra_social_2=obra_social_2,
+        num_afiliado_2=num_afiliado_2
         )
+    
     db.session.add(paciente)
     db.session.commit()
 
