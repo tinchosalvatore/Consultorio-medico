@@ -21,7 +21,6 @@ class Paciente(db.Model):
     nombre_paciente = db.Column(db.String(50), nullable=False)
     apellido = db.Column(db.String(50), nullable=False)
     dni = db.Column(db.Integer, nullable=True, unique=True)
-    libreta_civ = db.Column(db.Integer, nullable=True, unique=True)
     sexo = db.Column(db.String(50), nullable=True)
     mail = db.Column(db.String(50), nullable=True)
     telefono = db.Column(db.String(20), nullable=True)
@@ -72,7 +71,6 @@ def buscar_paciente():
     pacientes = Paciente.query.filter(
             (Paciente.nombre_paciente.ilike(f"%{busqueda}%")) |
             (Paciente.apellido.ilike(f"%{busqueda}%")) |
-            (Paciente.libreta_civ.ilike(f"%{busqueda}%")) |
             (Paciente.dni.ilike(f"%{busqueda}%")) |
             (Paciente.mail.ilike(f"%{busqueda}%")) |
             (Paciente.telefono.ilike(f"%{busqueda}%")) |
@@ -92,25 +90,24 @@ def buscar_paciente():
             obras_sociales.append({'nombre': paciente.obra_social_2, 'num_afiliado': paciente.num_afiliado_2})
 
     #Lista con los resultados de la busqueda para mostrarlos en la página
-    resultado = {
-        'medico': paciente.medico,
-        'historia_clinica': paciente.historia_clinica,
-        'nombre': paciente.nombre_paciente,
-        'apellido': paciente.apellido,
-        'dni': paciente.dni,
-        'libreta_civ': paciente.libreta_civ,
-        'sexo': paciente.sexo,
-        'mail': paciente.mail,
-        'telefono': paciente.telefono,
-        'telefono_celular': paciente.telefono_celular,
-        'nacionalidad': paciente.nacionalidad,
-        'domicilio': paciente.domicilio,
-        'fecha_nacimiento': paciente.fecha_nacimiento.strftime("%d/%m/%Y"),
-        'ocupacion': paciente.ocupacion,
-        'turno': turno.fecha.strftime("%d/%m/%Y %H:%M") if turno else None,
-        'obras_sociales': obras_sociales
-    }
-    resultados.append(resultado)
+        resultado = {
+            'medico': paciente.medico,
+            'historia_clinica': paciente.historia_clinica,
+            'nombre': paciente.nombre_paciente,
+            'apellido': paciente.apellido,
+            'dni': paciente.dni,
+            'sexo': paciente.sexo,
+            'mail': paciente.mail,
+            'telefono': paciente.telefono,
+            'telefono_celular': paciente.telefono_celular,
+            'nacionalidad': paciente.nacionalidad,
+            'domicilio': paciente.domicilio,
+            'fecha_nacimiento': paciente.fecha_nacimiento.strftime("%d/%m/%Y"),
+            'ocupacion': paciente.ocupacion,
+            'turno': turno.fecha.strftime("%d/%m/%Y %H:%M") if turno else None,
+            'obras_sociales': obras_sociales
+        }
+        resultados.append(resultado)
 
     # Si no hay resultados, se muestra un mensaje de alerta, no se muestra en caso de que si haya resultados
     mensaje = "No se encontraron pacientes con esa busqueda" if not resultados else None
@@ -129,7 +126,6 @@ def agregar_paciente():
     historia_clinica = request.form.get('historia_clinica')
     nombre = request.form.get('nombre')
     apellido = request.form.get('apellido')
-    libreta_civ = request.form.get('libreta_civ')
     dni = request.form.get('dni')
     sexo = request.form.get('sexo')
     mail = request.form.get('mail')
@@ -150,7 +146,6 @@ def agregar_paciente():
         historia_clinica=historia_clinica,
         nombre_paciente=nombre,
         apellido=apellido,
-        libreta_civ=libreta_civ,
         dni=dni,
         sexo=sexo,
         mail=mail,
