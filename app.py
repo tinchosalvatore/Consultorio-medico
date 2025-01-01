@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+import csv
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from sqlalchemy.orm import relationship
@@ -55,6 +56,30 @@ def init_db():
         # db.drop_all() 
 
 #RUTAS
+
+# Esta ruta es para subir un archivo csv
+#@app.route('/subir_csv', methods=['GET'])
+#def subir_archivo():
+#    # ruta_csv = 'ruta del archivo csv'
+#    try:
+#        with open(ruta_csv, 'r', encoding='utf-8') as archivo:
+#            csv_reader = csv.DictReader(archivo)
+#            for fila in csv_reader:
+#                paciente = Paciente(
+#                    nombre_paciente=fila.get('nombre'),
+#                    apellido=fila.get('apellido'),
+#                    dni=fila.get('dni'),
+#                    # Asigna otros campos
+#                )
+#                db.session.add(paciente)
+#            
+#            db.session.commit()
+#            return "Pacientes cargados exitosamente."
+#    except Exception as e:
+#        db.session.rollback()
+#        return f"Ocurrió un error: {e}"
+
+
 
 # @app.route se utiliza para mapear rutas, esta lo que hace es mapear al index.html cuando se esta en la pagina principal
 @app.route('/')
