@@ -42,9 +42,10 @@ class Turno(db.Model):
     __tablename__ = 'turnos'
     
     turno_id = db.Column(db.Integer, primary_key=True)
-    paciente_id = db.Column(db.Integer, db.ForeignKey('pacientes.paciente_id'), nullable=False)
-    fecha = db.Column(db.DateTime, nullable=False)
-    ocupado = db.Column(db.Boolean, default=False, nullable=False)
+    paciente_id = db.Column(db.Integer, db.ForeignKey('pacientes.paciente_id'), nullable=True)
+    fecha = db.Column(db.Date, nullable=False)
+    hora = db.Column(db.Time, nullable=False) 
+    estado = db.Column(db.String(20), nullable=True)
     
     # Relaciones
     paciente = relationship("Paciente", back_populates="turnos")
@@ -52,8 +53,8 @@ class Turno(db.Model):
     # Esta funcion inicializa la base de datos
 def init_db():
     with app.app_context():
-        db.create_all()
-        # db.drop_all() 
+        # db.create_all()
+        db.drop_all() 
 
 #RUTAS
 
