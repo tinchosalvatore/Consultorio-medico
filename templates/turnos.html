@@ -26,57 +26,48 @@
                                 <input type="date" name="fecha_fin" id="fecha_fin" class="form-control" required>
                             </div>
                             <button type="submit" class="btn btn-primary btn-block">Generar Turnos</button>
-                        </form>
+                        </form>                        
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="container mt-4">
-            <div class="row">
-                <div class="col-md-6">
-                    <h3 class="text-center">Turnos de Primera Vez</h3>
-                    {% if turnos_primera_vez %}
-                        <ul class="list-group">
-                            {% for turno in turnos_primera_vez %}
-                                <li class="list-group-item">
-                                    <strong>Fecha:</strong> {{ turno.fecha }} <br>
-                                    <strong>Hora:</strong> {{ turno.hora }} <br>
-                                    <strong>Estado:</strong> {{ turno.estado }} 
-                                    <form action="/reservar_turno" method="post" class="mt-2">
-                                        <input type="hidden" name="turno_id" value="{{ turno.turno_id }}">
-                                        <button type="submit" class="btn btn-success btn-sm">Reservar</button>
-                                    </form>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% else %}
-                        <p class="text-muted text-center">No hay turnos disponibles para pacientes de primera vez.</p>
-                    {% endif %}
-                </div>
-
-                <div class="col-md-6">
-                    <h3 class="text-center">Turnos Recurrentes</h3>
-                    {% if turnos_recurrentes %}
-                        <ul class="list-group">
-                            {% for turno in turnos_recurrentes %}
-                                <li class="list-group-item">
-                                    <strong>Fecha:</strong> {{ turno.fecha }} <br>
-                                    <strong>Hora:</strong> {{ turno.hora }} <br>
-                                    <strong>Estado:</strong> {{ turno.estado }}
-                                    <form action="/reservar_turno" method="post" class="mt-2">
-                                        <input type="hidden" name="turno_id" value="{{ turno.turno_id }}">
-                                        <button type="submit" class="btn btn-success btn-sm">Reservar</button>
-                                    </form>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% else %}
-                        <p class="text-muted text-center">No hay turnos recurrentes disponibles.</p>
-                    {% endif %}
-                </div>
-            </div>
+            <h3>Turnos de Primera Vez</h3>
+            {% if turnos_primera_vez %}
+                <ul>
+                    {% for turno in turnos_primera_vez %}
+                    <li>
+                        {{ turno.fecha }} - {{ turno.hora }} 
+                        <form action="/reservar_turno" method="post" style="display:inline;">
+                            <input type="hidden" name="turno_id" value="{{ turno.turno_id }}">
+                            <button type="submit" class="btn btn-sm btn-primary">Reservar</button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No hay turnos de primera vez disponibles.</p>
+            {% endif %}
+        
+            <h3>Turnos Recurrentes</h3>
+            {% if turnos_recurrentes %}
+                <ul>
+                    {% for turno in turnos_recurrentes %}
+                    <li>
+                        {{ turno.fecha }} - {{ turno.hora }} 
+                        <form action="/reservar_turno" method="post" style="display:inline;">
+                            <input type="hidden" name="turno_id" value="{{ turno.turno_id }}">
+                            <button type="submit" class="btn btn-sm btn-primary">Reservar</button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No hay turnos recurrentes disponibles.</p>
+            {% endif %}
         </div>
+        
 
         <div class="text-center mt-4">
             <a href="/" class="btn btn-primary">Volver al Inicio</a>

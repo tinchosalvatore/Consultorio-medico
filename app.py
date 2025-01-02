@@ -46,7 +46,7 @@ class Turno(db.Model):
     fecha = db.Column(db.Date, nullable=False)
     hora = db.Column(db.Time, nullable=False) 
     estado = db.Column(db.String(20), nullable=True)    # Ocupado o libre
-    tipo_turno = db.Column(db.String(20), nullable=True)    # Primera vez o recurrente
+    tipo_turno = db.Column(db.String(20), nullable=True)    # primera_vez o recurrente
     
     # Relaciones
     paciente = relationship("Paciente", back_populates="turnos")
@@ -202,9 +202,26 @@ def turnos():
     turnos_recurrentes = Turno.query.filter_by(tipo_turno="recurrente", estado="disponible").all()
     return render_template('turnos.html', turnos_primera_vez=turnos_primera_vez, turnos_recurrentes=turnos_recurrentes)
 
-# Ruta para crear un nuevo turno
+
+    # Ruta para generar lso turnos desde el formulario de html
+@app.route('/generar_turnos', methods=['POST'])
+def generar_turnos_ruta():
+    # Obtener fechas del formulario
+    fecha_inicio = request.form.get('fecha_inicio')
+    fecha_fin = request.form.get('fecha_fin')
+
+    # Convertir las fechas de string a tipo date
+    fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
+    fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
+
+    # Llamar a la función que genera turnos
+    generar_turnos(fecha_inicio, fecha_fin)
+
+    flash("Turnos generados exitosamente.")
+    return redirect(url_for('turnos'))
+
+# Genera turnos automáticamente entre las fechas dadas    
 def generar_turnos(fecha_inicio, fecha_fin):
-    """Genera turnos automáticamente entre las fechas dadas."""
     # Configuración base
     horarios_inicio = time(8, 0)  # 08:00 AM
     horarios_fin = time(18, 0)   # 06:00 PM
@@ -249,10 +266,7 @@ def generar_turnos(fecha_inicio, fecha_fin):
     db.session.commit()
     print(f"Se generaron {len(turnos_creados)} turnos entre {fecha_inicio} y {fecha_fin}.")
 
-# Ejemplo de uso
-# fecha_inicio = date(2024, 1, 1)
-# fecha_fin = date(2024, 1, 15)
-# generar_turnos(fecha_inicio, fecha_fin)
+
 
 # Ruta para reservar turnos
 @app.route('/reservar_turno', methods=['POST'])
