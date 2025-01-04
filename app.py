@@ -1,14 +1,19 @@
 import csv
+import os
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta, time, date
 from sqlalchemy.orm import relationship
 
-
+#Cargamos variables de entorno
+load_dotenv()
 #Llama a flask como app
 app = Flask(__name__)
 #ruta de la base de datos para que SQLAlchemy pueda conectarse
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///consultorio.db"
+app.secret_key = os.getenv('SECRET_KEY')
+
 #Nos permite crear consultas en SQL con SQLAlchemy
 db = SQLAlchemy(app)
 
