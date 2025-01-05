@@ -228,8 +228,8 @@ def generar_turnos_ruta():
 # Genera turnos automáticamente entre las fechas dadas    
 def generar_turnos(fecha_inicio, fecha_fin):
     # Configuración base
-    horarios_inicio = time(8, 0)  # 08:00 AM
-    horarios_fin = time(18, 0)   # 06:00 PM
+    horarios_inicio = time(16, 0)
+    horarios_fin = time(20, 30)
     duracion_primera_vez = timedelta(minutes=45)  # Duración de turnos para pacientes nuevos
     duracion_recurrente = timedelta(minutes=30)  # Duración de turnos para pacientes recurrentes
     dias_habiles = [0, 1, 2, 3, 4]  # Lunes a viernes (0=lunes, ..., 6=domingo)
@@ -277,15 +277,25 @@ def generar_turnos(fecha_inicio, fecha_fin):
 @app.route('/reservar_turno', methods=['POST'])
 def reservar_turno():
     turno_id = request.form.get('turno_id')
+    apellido = request.form.get('apellido')  
+    tipo_turno = request.form.get('tipo_turno')
     turno = Turno.query.get(turno_id)
-    if turno and turno.estado == "disponible":
-        turno.estado = "reservado"
-        db.session.commit()
-        flash("Turno reservado exitosamente.")
-    else:
-        flash("El turno ya no está disponible.")
-    return redirect(url_for('turnos'))
 
+    if not turno:
+        flash("Turno no encontrado.")
+        return redirect(url_for('turnos'))
+    
+    if turno.estado != "disponible":
+        flash("El turno ya no está disponible.")
+        return redirect(url_for('turnos'))
+    
+    turno.estado = "reservado"
+    turno.paciente_id = paciente_id
+    turno.tipo_turno = tipo_turno
+    db.session.commit()
+    flash("Turno reservado exitosamente.")
+    return redirect(url_for('turnos'))    
+    
 
 # Cada vez que cambiamos algo, el servidor se reinicia por si solo. Ademas llamamos al init de la base de datos
 if __name__ == '__main__':
