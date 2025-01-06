@@ -53,8 +53,8 @@ class Turno(db.Model):
     # Esta funcion inicializa la base de datos
 def init_db():
     with app.app_context():
-        # db.create_all()
-        db.drop_all() 
+        db.create_all()
+        # db.drop_all() 
 
 #RUTAS
 
@@ -202,56 +202,30 @@ def turnos():
     # Ruta para generar lso turnos desde el formulario de html
 @app.route('/generar_turnos', methods=['POST'])
 def generar_turnos():
-    duracion = 45 if tipo_turno == "primera_vez" else 30
-
-    hora_actual = datetime.strptime(inicio, "%H:%M").time()
-    hora_fin = datetime.strptime(fin, "%H:%M").time()
-    turnos_creados = []
     
+    # Datos del formulario
+    nombre_apellido = request.form.get('nombre_apellido', '')
+    fecha = datetime.strptime(request.form.get('fecha'), "%Y-%m-%d").date()
+    hora_inicio = datetime.strptime(request.form.get('hora_inicio'), "%H:%M").time()
+    hora_fin = datetime.strptime(request.form.get('hora_fin'), "%H:%M").time()
+    tipo_turno = request.form.get('tipo_turno')
+    
+    turnos_creados = []
     # Genera turnos mientras que la hora actual no sea mayor que la hora final
-    while hora_actual < hora_fin:
-        siguiente_hora = (datetime.combine(fecha, hora_actual) + timedelta(minutes=duracion)).time()
-        if siguiente_hora > hora_fin:
-            break
+    if hora_inicio < hora_fin:
         turno = Turno(
             nombre_apellido=nombre_apellido,
             fecha=fecha,
-            hora=hora_actual,
+            hora=hora_inicio,
             estado="disponible",
             tipo_turno=tipo_turno
         )
         db.session.add(turno)
         turnos_creados.append(turno)
-        hora_actual = siguiente_hora
     
     db.session.commit()
-    return render_template('turnos.html', turnos=turnos)
-
-
-
-# Ruta para reservar turnos
-@app.route('/reservar_turno', methods=['POST'])
-def reservar_turno():
-    turno_id = request.form.get('turno_id')
-    nombre_apellido = request.form.get('nombre_apellido')  
-    tipo_turno = request.form.get('tipo_turno')
-    turno = Turno.query.get(turno_id)
-
-    if not turno:
-        flash("Turno no encontrado.")
-        return redirect(url_for('turnos'))
-    
-    if turno.estado != "disponible":
-        flash("El turno ya no está disponible.")
-        return redirect(url_for('turnos'))
-    
-    turno.estado = "reservado"
-    turno.nombre_apellido = nombre_apellido
-    turno.tipo_turno = tipo_turno
-    db.session.commit()
-    flash("Turno reservado exitosamente.")
-    return redirect(url_for('turnos'))    
-    
+    mensaje = "El turno se creo correctamente"
+    return render_template('turnos.html', turnos=turnos, mensaje = mensaje)    
 
 # Cada vez que cambiamos algo, el servidor se reinicia por si solo. Ademas llamamos al init de la base de datos
 if __name__ == '__main__':
