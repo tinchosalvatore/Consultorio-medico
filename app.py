@@ -40,27 +40,21 @@ class Paciente(db.Model):
     obra_social_2 = db.Column(db.String(50), nullable=True)
     num_afiliado_2 = db.Column(db.Integer, nullable=True)
     
-    # Relaciones, back_populates es para evitar inconsistencias en la base de datos, actualizando los cambios bidireccionalmente
-    turnos = relationship("Turno", back_populates="paciente")
-
 class Turno(db.Model):
     __tablename__ = 'turnos'
     
     turno_id = db.Column(db.Integer, primary_key=True)
-    paciente_id = db.Column(db.Integer, db.ForeignKey('pacientes.paciente_id'), nullable=True)
+    nombre_apellido = db.Column(db.String(50), nullable=False)
     fecha = db.Column(db.Date, nullable=False)
     hora = db.Column(db.Time, nullable=False) 
     estado = db.Column(db.String(20), nullable=True)    # Ocupado o libre
     tipo_turno = db.Column(db.String(20), nullable=True)    # primera_vez o recurrente
-    
-    # Relaciones
-    paciente = relationship("Paciente", back_populates="turnos")
 
     # Esta funcion inicializa la base de datos
 def init_db():
     with app.app_context():
-        db.create_all()
-        # db.drop_all() 
+        # db.create_all()
+        db.drop_all() 
 
 #RUTAS
 
@@ -201,75 +195,37 @@ def agregar_paciente():
     return render_template('nuevo_paciente.html', mensaje=mensaje)
 
     # Ruta para la navegacion de index.html a turnos.html
-@app.route('/turnos', methods=['GET', 'POST'])
+@app.route('/turnos')
 def turnos():
-    turnos_primera_vez = Turno.query.filter_by(tipo_turno="primera_vez", estado="disponible").all()
-    turnos_recurrentes = Turno.query.filter_by(tipo_turno="recurrente", estado="disponible").all()
-    return render_template('turnos.html', turnos_primera_vez=turnos_primera_vez, turnos_recurrentes=turnos_recurrentes)
-
+    return render_template('turnos.html')
 
     # Ruta para generar lso turnos desde el formulario de html
 @app.route('/generar_turnos', methods=['POST'])
-def generar_turnos_ruta():
-    # Obtener fechas del formulario
-    fecha_inicio = request.form.get('fecha_inicio')
-    fecha_fin = request.form.get('fecha_fin')
+def generar_turnos():
+    duracion = 45 if tipo_turno == "primera_vez" else 30
 
-    # Convertir las fechas de string a tipo date
-    fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d').date()
-    fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d').date()
-
-    # Llamar a la función que genera turnos
-    generar_turnos(fecha_inicio, fecha_fin)
-
-    flash("Turnos generados exitosamente.")
-    return redirect(url_for('turnos'))
-
-# Genera turnos automáticamente entre las fechas dadas    
-def generar_turnos(fecha_inicio, fecha_fin):
-    # Configuración base
-    horarios_inicio = time(16, 0)
-    horarios_fin = time(20, 30)
-    duracion_primera_vez = timedelta(minutes=45)  # Duración de turnos para pacientes nuevos
-    duracion_recurrente = timedelta(minutes=30)  # Duración de turnos para pacientes recurrentes
-    dias_habiles = [0, 1, 2, 3, 4]  # Lunes a viernes (0=lunes, ..., 6=domingo)
-
-    # Conversión de fechas
-    fecha_actual = fecha_inicio
-
+    hora_actual = datetime.strptime(inicio, "%H:%M").time()
+    hora_fin = datetime.strptime(fin, "%H:%M").time()
     turnos_creados = []
-    while fecha_actual <= fecha_fin:
-        if fecha_actual.weekday() in dias_habiles:  # Verifica si es día hábil
-            hora_actual = datetime.combine(fecha_actual, horarios_inicio).time()
-            alternar = True  # Alternar entre "primera vez" y "recurrente"
-            while hora_actual < horarios_fin:
-                if alternar:
-                    duracion = duracion_primera_vez
-                    tipo_turno = "primera_vez"
-                else:
-                    duracion = duracion_recurrente
-                    tipo_turno = "recurrente"
-
-                # Crear un turno
-                turno = Turno(
-                    fecha=fecha_actual,
-                    hora=hora_actual,
-                    estado="disponible",  # Estado inicial
-                    tipo_turno=tipo_turno
-                )
-                turnos_creados.append(turno)
-
-                # Avanzar al próximo turno
-                hora_actual = (datetime.combine(fecha_actual, hora_actual) + duracion).time()
-                alternar = not alternar  # Cambiar el tipo de turno
-        
-        # Avanzar al día siguiente
-        fecha_actual += timedelta(days=1)
-
-    # Guardar en la base de datos
-    db.session.add_all(turnos_creados)
+    
+    # Genera turnos mientras que la hora actual no sea mayor que la hora final
+    while hora_actual < hora_fin:
+        siguiente_hora = (datetime.combine(fecha, hora_actual) + timedelta(minutes=duracion)).time()
+        if siguiente_hora > hora_fin:
+            break
+        turno = Turno(
+            nombre_apellido=nombre_apellido,
+            fecha=fecha,
+            hora=hora_actual,
+            estado="disponible",
+            tipo_turno=tipo_turno
+        )
+        db.session.add(turno)
+        turnos_creados.append(turno)
+        hora_actual = siguiente_hora
+    
     db.session.commit()
-    print(f"Se generaron {len(turnos_creados)} turnos entre {fecha_inicio} y {fecha_fin}.")
+    return render_template('turnos.html', turnos=turnos)
 
 
 
@@ -277,7 +233,7 @@ def generar_turnos(fecha_inicio, fecha_fin):
 @app.route('/reservar_turno', methods=['POST'])
 def reservar_turno():
     turno_id = request.form.get('turno_id')
-    apellido = request.form.get('apellido')  
+    nombre_apellido = request.form.get('nombre_apellido')  
     tipo_turno = request.form.get('tipo_turno')
     turno = Turno.query.get(turno_id)
 
@@ -290,7 +246,7 @@ def reservar_turno():
         return redirect(url_for('turnos'))
     
     turno.estado = "reservado"
-    turno.paciente_id = paciente_id
+    turno.nombre_apellido = nombre_apellido
     turno.tipo_turno = tipo_turno
     db.session.commit()
     flash("Turno reservado exitosamente.")
