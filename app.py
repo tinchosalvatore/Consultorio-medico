@@ -46,7 +46,8 @@ class Turno(db.Model):
     turno_id = db.Column(db.Integer, primary_key=True)
     nombre_apellido = db.Column(db.String(50), nullable=False)
     fecha = db.Column(db.Date, nullable=False)
-    hora = db.Column(db.Time, nullable=False) 
+    hora_inicio = db.Column(db.Time, nullable=False)
+    hora_fin = db.Column(db.Time, nullable=False)
     estado = db.Column(db.String(20), nullable=True)    # Ocupado o libre
     tipo_turno = db.Column(db.String(20), nullable=True)    # primera_vez o recurrente
 
@@ -202,39 +203,50 @@ def turnos():
     # Ruta para generar lso turnos desde el formulario de html
 @app.route('/generar_turnos', methods=['POST'])
 def generar_turnos():
+    try:
+        # Datos del formulario
+        nombre_apellido = request.form.get('nombre_apellido', '')
+        fecha = datetime.strptime(request.form.get('fecha'), "%Y-%m-%d").date()
+        hora_inicio = datetime.strptime(request.form.get('hora_inicio'), "%H:%M").time()
+        hora_fin = datetime.strptime(request.form.get('hora_fin'), "%H:%M").time()
+        tipo_turno = request.form.get('tipo_turno')
+
+        turnos_creados = []
+        # Genera turnos mientras que la hora actual no sea mayor que la hora final
+        if hora_inicio < hora_fin:
+            turno = Turno(
+                nombre_apellido=nombre_apellido,
+                fecha=fecha,
+                hora_inicio=hora_inicio,
+                hora_fin=hora_fin,
+                estado="disponible",
+                tipo_turno=tipo_turno
+            )
+            db.session.add(turno)
+            turnos_creados.append(turno)
     
-    # Datos del formulario
-    nombre_apellido = request.form.get('nombre_apellido', '')
-    fecha = datetime.strptime(request.form.get('fecha'), "%Y-%m-%d").date()
-    hora_inicio = datetime.strptime(request.form.get('hora_inicio'), "%H:%M").time()
-    hora_fin = datetime.strptime(request.form.get('hora_fin'), "%H:%M").time()
-    tipo_turno = request.form.get('tipo_turno')
+        db.session.commit()
+        flash("Turnos generados correctamente")
+        return render_template('turnos.html', turnos=turnos_creados)
     
-    turnos_creados = []
-    # Genera turnos mientras que la hora actual no sea mayor que la hora final
-    if hora_inicio < hora_fin:
-        turno = Turno(
-            nombre_apellido=nombre_apellido,
-            fecha=fecha,
-            hora=hora_inicio,
-            estado="disponible",
-            tipo_turno=tipo_turno
-        )
-        db.session.add(turno)
-        turnos_creados.append(turno)
-    
-    db.session.commit()
-    mensaje = "El turno se creo correctamente"
-    return render_template('turnos.html', turnos=turnos, mensaje = mensaje)
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Ocurrió un error: {e}")
+        return render_template('turnos.html')
 
 @app.route('/consultar_turnos', methods=['POST'])
 def consultar_turnos():
     # Obtiene el valor del input del formulario
-    nombre_apellido = request.form.get('busqueda', '').strip()
+    busqueda = request.form.get('busqueda')  
     
     # Realiza la consulta filtrando por nombre o apellido
     turnos = Turno.query.filter(
-        Turno.nombre_apellido.ilike(f'%{nombre_apellido}%')  # Coincidencia parcial
+        Turno.nombre_apellido.ilike(f'%{busqueda}%') |
+        Turno.fecha.ilike(f'%{busqueda}%') |
+        Turno.hora_inicio.ilike(f'%{busqueda}%') |
+        Turno.hora_fin.ilike(f'%{busqueda}%') |
+        Turno.estado.ilike(f'%{busqueda}%') |
+        Turno.tipo_turno.ilike(f'%{busqueda}%') 
     ).all()
     
     return render_template('turnos.html', turnos=turnos)
