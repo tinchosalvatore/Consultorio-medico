@@ -225,7 +225,19 @@ def generar_turnos():
     
     db.session.commit()
     mensaje = "El turno se creo correctamente"
-    return render_template('turnos.html', turnos=turnos, mensaje = mensaje)    
+    return render_template('turnos.html', turnos=turnos, mensaje = mensaje)
+
+@app.route('/consultar_turnos', methods=['POST'])
+def consultar_turnos():
+    # Obtiene el valor del input del formulario
+    nombre_apellido = request.form.get('busqueda', '').strip()
+    
+    # Realiza la consulta filtrando por nombre o apellido
+    turnos = Turno.query.filter(
+        Turno.nombre_apellido.ilike(f'%{nombre_apellido}%')  # Coincidencia parcial
+    ).all()
+    
+    return render_template('turnos.html', turnos=turnos)
 
 # Cada vez que cambiamos algo, el servidor se reinicia por si solo. Ademas llamamos al init de la base de datos
 if __name__ == '__main__':

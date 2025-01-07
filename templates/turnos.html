@@ -57,6 +57,45 @@
     <div class="text-center mt-4">
         <a href="/" class="btn btn-primary">Volver al Menú</a>
     </div>
-</body>
+    
+    <div class="class="container mt-4">
+        <h1>Buscar Turnos</h1>
+            <form action="/consultar_turnos" method="POST">
+                <label for="busqueda">Buscar por nombre o apellido:</label>
+                <input type="text" id="busqueda" name="busqueda" placeholder="Nombre o apellido" required>
+                <button type="submit">Buscar</button>
+            </form>
 
+            <h2>Resultados de la Búsqueda</h2>
+            {% if turnos %}
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Paciente</th>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Estado</th>
+                            <th>Tipo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for turno in turnos %}
+                        <tr>
+                            <td>{{ turno.turno_id }}</td>
+                            <td>{{ turno.paciente_id }}</td>
+                            <td>{{ turno.fecha }}</td>
+                            <td>{{ turno.hora }}</td>
+                            <td>{{ turno.estado }}</td>
+                            <td>{{ turno.tipo_turno }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No se encontraron turnos.</p>
+            {% endif %}
+    </div>
+        
+</body>
 </html>
