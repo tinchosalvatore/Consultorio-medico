@@ -40,16 +40,20 @@ class Paciente(db.Model):
     obra_social_2 = db.Column(db.String(50), nullable=True)
     num_afiliado_2 = db.Column(db.Integer, nullable=True)
     
+        # Relación con la tabla Turno
+    turnos = db.relationship('Turno', back_populates='paciente', cascade="all, delete-orphan")
+
 class Turno(db.Model):
     __tablename__ = 'turnos'
     
     turno_id = db.Column(db.Integer, primary_key=True)
-    nombre_apellido = db.Column(db.String(50), nullable=False)
+    paciente_id = db.Column(db.Integer, db.ForeignKey('pacientes.paciente_id'), nullable=True)
     fecha = db.Column(db.Date, nullable=False)
     hora_inicio = db.Column(db.Time, nullable=False)
     hora_fin = db.Column(db.Time, nullable=False)
-    estado = db.Column(db.String(20), nullable=True)    # Ocupado o libre
-    tipo_turno = db.Column(db.String(20), nullable=True)    # primera_vez o recurrente
+
+        # Relación con la tabla Paciente
+    paciente = db.relationship('Paciente', back_populates='turnos')
 
     # Esta funcion inicializa la base de datos
 def init_db():
@@ -109,7 +113,7 @@ def buscar_paciente():
     resultados = []
     for paciente in pacientes:
             # Obtener el turno más reciente, si es que existe
-        turno = Turno.query.filter_by(paciente_id = paciente.paciente_id).order_by(Turno.fecha.desc()).first()
+        turno = Turno.query.filter_by(nombre_apellido = paciente.apellido).order_by(Turno.fecha.desc()).first()
         obras_sociales = []
         if paciente.obra_social_1:
             obras_sociales.append({'nombre': paciente.obra_social_1, 'num_afiliado': paciente.num_afiliado_1})
@@ -202,14 +206,28 @@ def turnos():
 
     # Ruta para generar lso turnos desde el formulario de html
 @app.route('/generar_turnos', methods=['POST'])
-def generar_turnos():
+def reservar_turnos():
     try:
         # Datos del formulario
-        nombre_apellido = request.form.get('nombre_apellido', '')
+        nombre_apellido = request.form.get('nombre_apellido', '').strip()
         fecha = datetime.strptime(request.form.get('fecha'), "%Y-%m-%d").date()
         hora_inicio = datetime.strptime(request.form.get('hora_inicio'), "%H:%M").time()
         hora_fin = datetime.strptime(request.form.get('hora_fin'), "%H:%M").time()
-        tipo_turno = request.form.get('tipo_turno')
+
+        # Separar nombre y apellido
+        partes_nombre = nombre_apellido.split()
+        if len(partes_nombre) < 2:
+            raise ValueError("Por favor, ingrese el nombre y el apellido del paciente.")
+
+        nombre = " ".join(partes_nombre[:-1])  # Todas las palabras menos la última (nombre)
+        apellido = partes_nombre[-1]  # La última palabra (apellido)
+
+        # Buscar el paciente en la base de datos
+        paciente = Paciente.query.filter_by(nombre_paciente=nombre, apellido=apellido).first()
+
+        if not paciente:
+            raise ValueError("No se encontró un paciente con ese nombre y apellido.")
+
 
         turnos_creados = []
         # Genera turnos mientras que la hora actual no sea mayor que la hora final
@@ -219,14 +237,12 @@ def generar_turnos():
                 fecha=fecha,
                 hora_inicio=hora_inicio,
                 hora_fin=hora_fin,
-                estado="disponible",
-                tipo_turno=tipo_turno
             )
             db.session.add(turno)
             turnos_creados.append(turno)
     
         db.session.commit()
-        flash("Turnos generados correctamente")
+        flash("Recordatorio generado correctamente")
         return render_template('turnos.html', turnos=turnos_creados)
     
     except Exception as e:

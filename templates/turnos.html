@@ -10,7 +10,7 @@
 
 <body>
     <div class="container mt-4">
-        <h1>Generar Turnos</h1>
+        <h1>Generador Recordatorio de Turnos</h1>
 
         <!-- Mostrar mensajes flash -->
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -30,7 +30,7 @@
             <!-- Nombre del paciente -->
             <div class="form-group">
                 <label for="nombre_apellido">Nombre y Apellido</label>
-                <input type="text" name="nombre_apellido" id="nombre_apellido" class="form-control" required placeholder="Ingrese el nombre y apellido del paciente">
+                <input type="text" name="nombre_apellido" id="nombre_apellido" class="form-control" required placeholder="Ingrese el nombre y apellido del paciente completo">
             </div>
 
             <!-- Fecha del turno -->
@@ -62,28 +62,10 @@
 
             <!-- Botón para generar el turno -->
             <div class="form-group text-center">
-                <button type="submit" class="btn btn-primary">Generar Turnos</button>
+                <button type="submit" class="btn btn-primary">Generar Recordatorio</button>
             </div>
         </form>
     </div>
-    
-    <div class="row">
-        <div class="col-md-6 offset-md-3 my-auto">
-            <div class="card">
-                <div class="card-header">
-                    <h1>Buscar Turnos</h1>
-                    <form action="/consultar_turnos" method="post">
-                        <div class="form-group">
-                            <input type="text" name="busqueda" placeholder="Ingrese algun dato del turno" class="form-control" autofocus>
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-block">Buscar</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <h2>Resultados de la Búsqueda</h2>
             
     <!-- Botón para volver al menú principal -->
     <div class="text-center mt-4">
