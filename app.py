@@ -48,29 +48,49 @@ def init_db():
 
 #RUTAS
 
-# Esta ruta es para subir un archivo csv
-#@app.route('/subir_csv', methods=['GET'])
-#def subir_archivo():
-#    # ruta_csv = 'ruta del archivo csv'
-#    try:
-#        with open(ruta_csv, 'r', encoding='utf-8') as archivo:
-#            csv_reader = csv.DictReader(archivo)
-#            for fila in csv_reader:
-#                paciente = Paciente(
-#                    nombre_paciente=fila.get('nombre'),
-#                    apellido=fila.get('apellido'),
-#                    dni=fila.get('dni'),
-#                    # Asigna otros campos
-#                )
-#                db.session.add(paciente)
-#            
-#            db.session.commit()
-#            return "Pacientes cargados exitosamente."
-#    except Exception as e:
-#        db.session.rollback()
-#        return f"Ocurrió un error: {e}"
-
-
+ # Esta ruta es para subir un archivo csv
+@app.route('/subir_csv', methods=['GET', 'POST'])
+def subir_archivo():
+    if request.method == 'POST':
+        # Asumiendo que el usuario sube un archivo a través de un formulario
+        archivo = request.files['archivo_csv']
+        if archivo:
+            try:
+                # Leer el archivo CSV directamente desde la solicitud
+                contenido = archivo.read().decode('utf-8')
+                import io
+                csv_reader = csv.DictReader(io.StringIO(contenido))
+                
+                for fila in csv_reader:
+                    paciente = Paciente(
+                        nombre_paciente=fila.get('nombre', ''),  # Usa un valor predeterminado vacío
+                        apellido=fila.get('apellido', ''),
+                        dni=fila.get('dni', ''),
+                        medico=fila.get('medico', ''),
+                        historia_clinica=fila.get('historia_clinica', ''),
+                        sexo=fila.get('sexo', ''),
+                        mail=fila.get('mail', ''),
+                        telefono=fila.get('telefono', ''),
+                        telefono_celular=fila.get('telefono_celular', ''),
+                        nacionalidad=fila.get('nacionalidad', ''),
+                        domicilio=fila.get('domicilio', ''),
+                        fecha_nacimiento=fila.get('fecha_nacimiento', ''),
+                        ocupacion=fila.get('ocupacion', ''),
+                        obra_social_1=fila.get('obra_social_1', ''),
+                        num_afiliado_1=fila.get('num_afiliado_1', ''),
+                        obra_social_2=fila.get('obra_social_2', ''),
+                        num_afiliado_2=fila.get('num_afiliado_2', '')
+                    )
+                    db.session.add(paciente)
+                
+                db.session.commit()
+                return "Pacientes cargados exitosamente."
+            except Exception as e:
+                db.session.rollback()
+                return f"Ocurrió un error: {e}"
+      
+      # Si es GET, muestra el formulario para subir el archivo
+    return render_template('subir_csv.html')  # Necesitarías crear esta plantilla
 
 # @app.route se utiliza para mapear rutas, esta lo que hace es mapear al index.html cuando se esta en la pagina principal
 @app.route('/')
@@ -97,8 +117,6 @@ def buscar_paciente():
 
     resultados = []
     for paciente in pacientes:
-            # Obtener el turno más reciente, si es que existe
-        turno = Turno.query.filter_by(nombre_apellido = paciente.apellido).order_by(Turno.fecha.desc()).first()
         obras_sociales = []
         if paciente.obra_social_1:
             obras_sociales.append({'nombre': paciente.obra_social_1, 'num_afiliado': paciente.num_afiliado_1})
@@ -118,9 +136,8 @@ def buscar_paciente():
             'telefono_celular': paciente.telefono_celular,
             'nacionalidad': paciente.nacionalidad,
             'domicilio': paciente.domicilio,
-            'fecha_nacimiento': paciente.fecha_nacimiento.strftime("%d/%m/%Y"),
+            'fecha_nacimiento': paciente.fecha_nacimiento,
             'ocupacion': paciente.ocupacion,
-            'turno': turno.fecha.strftime("%d/%m/%Y %H:%M") if turno else None,
             'obras_sociales': obras_sociales
         }
         resultados.append(resultado)
@@ -184,73 +201,80 @@ def agregar_paciente():
     mensaje = "El paciente se agrego correctamente"
     return render_template('nuevo_paciente.html', mensaje=mensaje)
 
-    # Ruta para la navegacion de index.html a turnos.html
-@app.route('/turnos')
-def turnos():
-    return render_template('turnos.html')
+@app.route('/eliminar_paciente', methods=['GET'])
+def mostrar_eliminar_paciente():
+    # Simplemente renderizamos la plantilla para eliminar pacientes
+    return render_template('eliminar_paciente.html', resultados_busqueda=[], mensaje=None)
 
-    # Ruta para generar lso turnos desde el formulario de html
-@app.route('/generar_turnos', methods=['POST'])
-def reservar_turnos():
-    try:
-        # Datos del formulario
-        nombre_apellido = request.form.get('nombre_apellido', '').strip()
-        fecha = datetime.strptime(request.form.get('fecha'), "%Y-%m-%d").date()
-        hora_inicio = datetime.strptime(request.form.get('hora_inicio'), "%H:%M").time()
-        hora_fin = datetime.strptime(request.form.get('hora_fin'), "%H:%M").time()
+@app.route('/buscar_paciente_eliminar', methods=['POST'])
+def buscar_paciente_eliminar():
+    busqueda = request.form.get('busqueda')   # obtenemos los datos de la busqueda, del input del html
 
-        # Separar nombre y apellido
-        partes_nombre = nombre_apellido.split()
-        if len(partes_nombre) < 2:
-            raise ValueError("Por favor, ingrese el nombre y el apellido del paciente.")
-
-        nombre = " ".join(partes_nombre[:-1])  # Todas las palabras menos la última (nombre)
-        apellido = partes_nombre[-1]  # La última palabra (apellido)
-
-        # Buscar el paciente en la base de datos
-        paciente = Paciente.query.filter_by(nombre_paciente=nombre, apellido=apellido).first()
-
-        if not paciente:
-            raise ValueError("No se encontró un paciente con ese nombre y apellido.")
-
-
-        turnos_creados = []
-        # Genera turnos mientras que la hora actual no sea mayor que la hora final
-        if hora_inicio < hora_fin:
-            turno = Turno(
-                nombre_apellido=nombre_apellido,
-                fecha=fecha,
-                hora_inicio=hora_inicio,
-                hora_fin=hora_fin,
-            )
-            db.session.add(turno)
-            turnos_creados.append(turno)
+    # Query para obtener los pacientes que coincidan con la busqueda
+    pacientes = Paciente.query.filter(
+            (Paciente.nombre_paciente.ilike(f"%{busqueda}%")) |
+            (Paciente.apellido.ilike(f"%{busqueda}%")) |
+            (Paciente.dni.ilike(f"%{busqueda}%")) |
+            (Paciente.mail.ilike(f"%{busqueda}%")) |
+            (Paciente.telefono.ilike(f"%{busqueda}%")) |
+            (Paciente.domicilio.ilike(f"%{busqueda}%")) |
+            (Paciente.ocupacion.ilike(f"%{busqueda}%"))
+        ).all()
     
+    resultados = []
+    for paciente in pacientes:
+        obras_sociales = []
+        if paciente.obra_social_1:
+            obras_sociales.append({'nombre': paciente.obra_social_1, 'num_afiliado': paciente.num_afiliado_1})
+        if paciente.obra_social_2:
+            obras_sociales.append({'nombre': paciente.obra_social_2, 'num_afiliado': paciente.num_afiliado_2})
+
+        resultado = {
+            'id': paciente.paciente_id,  # Importante: Incluir el ID para poder eliminar
+            'medico': paciente.medico,
+            'historia_clinica': paciente.historia_clinica,
+            'nombre': paciente.nombre_paciente,
+            'apellido': paciente.apellido,
+            'dni': paciente.dni,
+            'sexo': paciente.sexo,
+            'mail': paciente.mail,
+            'telefono': paciente.telefono,
+            'telefono_celular': paciente.telefono_celular,
+            'nacionalidad': paciente.nacionalidad,
+            'domicilio': paciente.domicilio,
+            'fecha_nacimiento': paciente.fecha_nacimiento,
+            'ocupacion': paciente.ocupacion,
+            'obras_sociales': obras_sociales
+        }
+        resultados.append(resultado)
+
+    # Si no hay resultados, se muestra un mensaje de alerta
+    mensaje = "No se encontraron pacientes con esa búsqueda" if not resultados else None
+    return render_template('eliminar_paciente.html', resultados_busqueda=resultados, mensaje=mensaje)
+
+@app.route('/confirmar_eliminar/<int:paciente_id>', methods=['POST'])
+def confirmar_eliminar(paciente_id):
+    try:
+        # Buscamos el paciente por ID
+        paciente = Paciente.query.get_or_404(paciente_id)
+        
+        # Guardamos nombre y apellido para mensaje de confirmación
+        nombre_completo = f"{paciente.nombre_paciente} {paciente.apellido}"
+        
+        # Eliminamos el paciente
+        db.session.delete(paciente)
         db.session.commit()
-        flash("Recordatorio generado correctamente")
-        return render_template('turnos.html', turnos=turnos_creados)
+        
+        # Mensaje de éxito
+        mensaje = f"El paciente {nombre_completo} ha sido eliminado correctamente"
+        return render_template('eliminar_paciente.html', resultados_busqueda=[], mensaje=mensaje, tipo_mensaje="success")
     
     except Exception as e:
+        # En caso de error, hacemos rollback
         db.session.rollback()
-        flash(f"Ocurrió un error: {e}")
-        return render_template('turnos.html')
+        mensaje = f"Ocurrió un error al eliminar el paciente: {str(e)}"
+        return render_template('eliminar_paciente.html', resultados_busqueda=[], mensaje=mensaje, tipo_mensaje="error")
 
-@app.route('/consultar_turnos', methods=['POST'])
-def consultar_turnos():
-    # Obtiene el valor del input del formulario
-    busqueda = request.form.get('busqueda')  
-    
-    # Realiza la consulta filtrando por nombre o apellido
-    turnos = Turno.query.filter(
-        Turno.nombre_apellido.ilike(f'%{busqueda}%') |
-        Turno.fecha.ilike(f'%{busqueda}%') |
-        Turno.hora_inicio.ilike(f'%{busqueda}%') |
-        Turno.hora_fin.ilike(f'%{busqueda}%') |
-        Turno.estado.ilike(f'%{busqueda}%') |
-        Turno.tipo_turno.ilike(f'%{busqueda}%') 
-    ).all()
-    
-    return render_template('turnos.html', turnos=turnos)
 
 # Cada vez que cambiamos algo, el servidor se reinicia por si solo. Ademas llamamos al init de la base de datos
 if __name__ == '__main__':

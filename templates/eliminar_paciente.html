@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consultorio Salvatore, Rivero</title>
+    <title>Consultorio Salvatore, Rivero - Eliminar Paciente</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/lux/bootstrap.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
 </head>
@@ -17,8 +17,8 @@
             <div class="col-md-6 offset-md-3 my-auto">
                 <div class="card">
                     <div class="card-header">
-                        <h1>Buscar paciente</h1>
-                        <form action="/buscar_paciente" method="post">
+                        <h1>Eliminar paciente</h1>
+                        <form action="/buscar_paciente_eliminar" method="post">
                             <div class="form-group">
                                 <input type="text" name="busqueda" placeholder="Ingrese un dato del paciente" class="form-control" autofocus>
                             </div>
@@ -28,6 +28,13 @@
                 </div>
             </div>
         </div>
+
+        <!-- Mostrar mensaje de éxito o error después de eliminación -->
+        {% if mensaje %}
+        <div class="alert alert-{{ tipo_mensaje|default('info') }} mt-3 col-md-6 offset-md-3 my-auto">
+            {{ mensaje }}
+        </div>
+        {% endif %}
 
         <div class="container mt-4">
             {% if resultados_busqueda %}
@@ -92,6 +99,42 @@
                                     {% endif %}
                                 </div>
                             </div>
+                            
+                            <!-- Botón para eliminar paciente -->
+                            <div class="mt-4">
+                                <button type="button" class="btn btn-danger btn-block" 
+                                      data-toggle="modal" 
+                                      data-target="#confirmarEliminar{{ paciente.id }}">
+                                  Eliminar Paciente
+                                </button>
+                            </div>
+                            
+                            <!-- Modal de confirmación -->
+                            <div class="modal fade" id="confirmarEliminar{{ paciente.id }}" tabindex="-1" role="dialog" aria-labelledby="modalLabel{{ paciente.id }}" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="modalLabel{{ paciente.id }}">Confirmar eliminación</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            ¿Está seguro que desea eliminar al paciente <strong>{{ paciente.nombre }} {{ paciente.apellido }}</strong>?
+                                            <br>
+                                            <div class="alert alert-warning mt-2">
+                                                Esta acción no se puede deshacer.
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                                            <form action="/confirmar_eliminar/{{ paciente.id }}" method="post">
+                                                <button type="submit" class="btn btn-danger">Eliminar</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -106,16 +149,13 @@
     </main>
 
     <div class="text-center mt-4">
+        <a href="/" class="btn btn-secondary">Volver al Inicio</a>
         <a href="/nuevo_paciente" class="btn btn-primary">Agregar Paciente</a>
     </div>
 
-    <div class="text-center mt-4">
-        <a href="/eliminar_paciente" class="btn btn-primary">Eliminar Paciente</a>
-    </div>
-
-    <div class="text-center mt-4">
-        <a href="/subir_csv" class="btn btn-primary">Subir CSV</a>
-    </div>
-
+    <!-- Scripts de Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
