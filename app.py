@@ -22,38 +22,23 @@ class Paciente(db.Model):
     __tablename__ = 'pacientes'  
     
     paciente_id = db.Column(db.Integer, primary_key=True)
-    medico = db.Column(db.String(50), nullable=True)
-    historia_clinica = db.Column(db.Integer, nullable=True)
-    nombre_paciente = db.Column(db.String(50), nullable=False)
-    apellido = db.Column(db.String(50), nullable=False)
-    dni = db.Column(db.Integer, nullable=True, unique=True)
-    sexo = db.Column(db.String(50), nullable=True)
-    mail = db.Column(db.String(50), nullable=True)
-    telefono = db.Column(db.String(20), nullable=True)
-    telefono_celular = db.Column(db.String(20), nullable=True)
-    nacionalidad = db.Column(db.String(50), nullable=True)
-    domicilio = db.Column(db.String(50), nullable=True)
-    fecha_nacimiento = db.Column(db.DateTime, nullable=True)
-    ocupacion = db.Column(db.String(50), nullable=True)
-    obra_social_1 = db.Column(db.String(50), nullable=True)
-    num_afiliado_1 = db.Column(db.Integer, nullable=True)
-    obra_social_2 = db.Column(db.String(50), nullable=True)
-    num_afiliado_2 = db.Column(db.Integer, nullable=True)
-    
-        # Relación con la tabla Turno
-    turnos = db.relationship('Turno', back_populates='paciente', cascade="all, delete-orphan")
-
-class Turno(db.Model):
-    __tablename__ = 'turnos'
-    
-    turno_id = db.Column(db.Integer, primary_key=True)
-    paciente_id = db.Column(db.Integer, db.ForeignKey('pacientes.paciente_id'), nullable=True)
-    fecha = db.Column(db.Date, nullable=False)
-    hora_inicio = db.Column(db.Time, nullable=False)
-    hora_fin = db.Column(db.Time, nullable=False)
-
-        # Relación con la tabla Paciente
-    paciente = db.relationship('Paciente', back_populates='turnos')
+    medico = db.Column(db.Text, nullable=True)
+    historia_clinica = db.Column(db.Text, nullable=True)
+    nombre_paciente = db.Column(db.Text, nullable=False)
+    apellido = db.Column(db.Text, nullable=False)
+    dni = db.Column(db.Text, nullable=True, unique=True)
+    sexo = db.Column(db.Text, nullable=True)
+    mail = db.Column(db.Text, nullable=True)
+    telefono = db.Column(db.Text, nullable=True)
+    telefono_celular = db.Column(db.Text, nullable=True)
+    nacionalidad = db.Column(db.Text, nullable=True)
+    domicilio = db.Column(db.Text, nullable=True)
+    fecha_nacimiento = db.Column(db.Text, nullable=True)
+    ocupacion = db.Column(db.Text, nullable=True)
+    obra_social_1 = db.Column(db.Text, nullable=True)
+    num_afiliado_1 = db.Column(db.Text, nullable=True)
+    obra_social_2 = db.Column(db.Text, nullable=True)
+    num_afiliado_2 = db.Column(db.Text, nullable=True)
 
     # Esta funcion inicializa la base de datos
 def init_db():
