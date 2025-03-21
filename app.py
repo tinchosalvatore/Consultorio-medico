@@ -26,7 +26,7 @@ class Paciente(db.Model):
     historia_clinica = db.Column(db.Text, nullable=True)
     nombre_paciente = db.Column(db.Text, nullable=False)
     apellido = db.Column(db.Text, nullable=False)
-    dni = db.Column(db.Text, nullable=True, unique=True)
+    dni = db.Column(db.Text, nullable=True)
     sexo = db.Column(db.Text, nullable=True)
     mail = db.Column(db.Text, nullable=True)
     telefono = db.Column(db.Text, nullable=True)
@@ -52,36 +52,49 @@ def init_db():
 @app.route('/subir_csv', methods=['GET', 'POST'])
 def subir_archivo():
     if request.method == 'POST':
-        # Asumiendo que el usuario sube un archivo a través de un formulario
         archivo = request.files['archivo_csv']
         if archivo:
             try:
-                # Leer el archivo CSV directamente desde la solicitud
                 contenido = archivo.read().decode('utf-8')
                 import io
-                csv_reader = csv.DictReader(io.StringIO(contenido))
+                # Detectar el delimitador - prueba con '|' si el CSV usa barras verticales
+                # o usa ',' como predeterminado
+                delimiter = ',' 
+                csv_reader = csv.DictReader(io.StringIO(contenido), delimiter=delimiter)
+                
+                # Imprime las cabeceras para depuración
+                print("Cabeceras del CSV:", csv_reader.fieldnames)
                 
                 for fila in csv_reader:
+                    # Mapea correctamente los nombres de las columnas - ajusta según las cabeceras reales
                     paciente = Paciente(
-                        nombre_paciente=fila.get('nombre', ''),  # Usa un valor predeterminado vacío
-                        apellido=fila.get('apellido', ''),
-                        dni=fila.get('dni', ''),
-                        medico=fila.get('medico', ''),
-                        historia_clinica=fila.get('historia_clinica', ''),
-                        sexo=fila.get('sexo', ''),
-                        mail=fila.get('mail', ''),
-                        telefono=fila.get('telefono', ''),
-                        telefono_celular=fila.get('telefono_celular', ''),
-                        nacionalidad=fila.get('nacionalidad', ''),
-                        domicilio=fila.get('domicilio', ''),
-                        fecha_nacimiento=fila.get('fecha_nacimiento', ''),
-                        ocupacion=fila.get('ocupacion', ''),
-                        obra_social_1=fila.get('obra_social_1', ''),
-                        num_afiliado_1=fila.get('num_afiliado_1', ''),
-                        obra_social_2=fila.get('obra_social_2', ''),
-                        num_afiliado_2=fila.get('num_afiliado_2', '')
+                        nombre_paciente=fila.get('Nombre', ''),  # Nota la 'N' mayúscula
+                        apellido=fila.get('Apellido', ''),       # Nota la 'A' mayúscula
+                        dni=fila.get('DNI', ''),                 # Usa el nombre correcto de la columna
+                        # ... mapea el resto de los campos correctamente
+                        medico=fila.get('Cuadro combinado44', ''),
+                        historia_clinica=fila.get('Número HC', ''),
+                        sexo=fila.get('Sexo', ''),
+                        mail=fila.get('E-mail', ''),
+                        telefono=fila.get('TE', ''),
+                        telefono_celular=fila.get('TEL Movil', ''),
+                        nacionalidad=fila.get('Nacionalidad', ''),
+                        domicilio=fila.get('Dirección', ''),
+                        fecha_nacimiento=fila.get('Fecha de Nacimiento', ''),
+                        ocupacion=fila.get('Ocupación', ''),
+                        obra_social_1=fila.get('Cuadro combinado40', ''),
+                        num_afiliado_1=fila.get('N_Afil', ''),
+                        # Para la segunda obra social, puedes utilizar otros campos del CSV
+                        # o dejarlos vacíos si no corresponden
+                        obra_social_2='',
+                        num_afiliado_2=''
                     )
-                    db.session.add(paciente)
+                    
+                    # Evitar insertar registros si el DNI está vacío o ya existe
+                    if paciente.dni:
+                        existing = Paciente.query.filter_by(dni=paciente.dni).first()
+                        if not existing:
+                            db.session.add(paciente)
                 
                 db.session.commit()
                 return "Pacientes cargados exitosamente."
@@ -89,8 +102,7 @@ def subir_archivo():
                 db.session.rollback()
                 return f"Ocurrió un error: {e}"
       
-      # Si es GET, muestra el formulario para subir el archivo
-    return render_template('subir_csv.html')  # Necesitarías crear esta plantilla
+    return render_template('subir_csv.html')
 
 # @app.route se utiliza para mapear rutas, esta lo que hace es mapear al index.html cuando se esta en la pagina principal
 @app.route('/')
