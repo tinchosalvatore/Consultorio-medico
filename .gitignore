@@ -50,3 +50,6 @@ media/
 *.bak
 *.swp
 *.swo
+
+# Archivos de seguridad
+.env

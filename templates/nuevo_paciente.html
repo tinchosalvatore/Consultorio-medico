@@ -11,64 +11,155 @@
     <div class="container mt-4">
         <h1 class="text-center">Agregar Nuevo Paciente</h1>
 
-        <!-- Mostrar el mensaje si está definido -->
-    {% if mensaje %}
-    <div class="alert alert-success text-center">
-        {{ mensaje }}
-    </div>
-    {% endif %}
+        {% if mensaje %}
+        <div class="alert alert-success text-center">
+            {{ mensaje }}
+        </div>
+        {% endif %}
 
-                <!-- Envia los datos a la ruta agregar_paciente -->
         <form action="/agregar_paciente" method="post">
-                <!-- Nombre -->
+
+            <!-- Medico -->
+            <div class="form-group">
+                <label for="medico">Medico</label>
+                <select name="medico" id="medico" class="form-control">
+                    <option value="Adrian Salvatore">Adrian Salvatore</option>
+                    <option value="Gloria Rivero">Gloria Rivero</option>
+                </select>
+            </div>
+
+            <!-- Historia Clinica -->
+            <div class="form-group">
+                <label for="historia_clinica">Historia Clinica</label>
+                <input type="number" name="historia_clinica" id="historia_clinica" class="form-control" required>
+            </div>
+
+            <!-- Nombre -->
             <div class="form-group">
                 <label for="nombre">Nombre</label>
                 <input type="text" name="nombre" id="nombre" class="form-control" required>
             </div>
-                <!-- Apellido -->
+            
+            <!-- Apellido -->
             <div class="form-group">
                 <label for="apellido">Apellido</label>
                 <input type="text" name="apellido" id="apellido" class="form-control" required>
             </div>
-                <!-- DNI -->
+            
+            <!-- DNI -->
             <div class="form-group">
                 <label for="dni">DNI</label>
                 <input type="number" name="dni" id="dni" class="form-control" required>
             </div>
-                <!-- mail -->
+            
+            <!-- Sexo -->
             <div class="form-group">
-                <label for="mail">Mail</label>
-                <input type="text" name="mail" id="mail" class="form-control" required>
+                <label for="sexo">Sexo</label>
+                <select name="sexo" id="sexo" class="form-control">
+                    <option value="Masculino">Masculino</option>
+                    <option value="Femenino">Femenino</option>
+                    <option value="Otro">Otro</option>
+                </select>
             </div>
-                <!-- telefono -->
+
+            <!-- Email -->
             <div class="form-group">
-                <label for="telefono">Telefono</label>
-                <input type="text" name="telefono" id="telefono" class="form-control" required>
+                <label for="mail">Email</label>
+                <input type="email" name="mail" id="mail" class="form-control">
             </div>
-                <!-- domicilio -->
+            
+            <!-- Teléfono -->
+            <div class="form-group">
+                <label for="telefono">Teléfono</label>
+                <input type="text" name="telefono" id="telefono" class="form-control">
+            </div>
+
+            <!-- Teléfono celular -->
+            <div class="form-group">
+                <label for="telefono_celular">Teléfono Celular</label>
+                <input type="text" name="telefono_celular" id="telefono_celular" class="form-control">
+            </div>
+            
+            <!-- Nacionalidad -->
+            <div class="form-group">
+                <label for="nacionalidad">Nacionalidad</label>
+                <input type="text" name="nacionalidad" id="nacionalidad" class="form-control">
+            </div>
+
+            <!-- Domicilio -->
             <div class="form-group">
                 <label for="domicilio">Domicilio</label>
-                <input type="text" name="domicilio" id="domicilio" class="form-control" required>
+                <input type="text" name="domicilio" id="domicilio" class="form-control">
             </div>
-                <!-- fecha nacimiento -->
+            
+            <!-- Fecha de nacimiento -->
             <div class="form-group">
-                <label for="fecha_nacimiento">Fecha de nacimiento</label>
-                <input type="text" name="fecha_nacimiento" id="fecha_nacimiento" class="form-control" required>
+                <label for="fecha_nacimiento">Fecha de Nacimiento</label>
+                <input type="date" name="fecha_nacimiento" id="fecha_nacimiento" class="form-control">
+            </div>
+            
+            <!-- Ocupación -->
+            <div class="form-group">
+                <label for="ocupacion">Ocupación</label>
+                <input type="text" name="ocupacion" id="ocupacion" class="form-control">
+            </div>
+            
+            <!-- Obras Sociales -->
+            <div class="form-group">
+                <label for="obras_sociales">Obras Sociales</label>
+                <div id="obras-sociales-container">
+                    <!-- Plantilla para múltiples obras sociales -->
+                    <div class="input-group mb-2">
+                        <input type="text" name="obras_sociales[][nombre]" class="form-control" placeholder="Nombre de la obra social">
+                        <input type="text" name="obras_sociales[][num_afiliado]" class="form-control" placeholder="Número de afiliado">
+                        <button type="button" class="btn btn-danger remove-obras-sociales">X</button>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary mt-2" id="add-obras-sociales">Agregar Otra</button>
             </div>
 
-            <!-- ocupacion -->
-            <div class="form-group">
-                <label for="ocupacion">Ocupacion</label>
-                <input type="text" name="ocupacion" id="ocupacion" class="form-control" required>
-            </div>
-
-            <button type="submit" class="btn btn-success btn-block">Agregar Paciente</button>
+            <button type="submit" class="btn btn-success btn-block mt-3">Agregar Paciente</button>
         </form>
     </div>
 
-    <!-- Boton para volver al menu principal -->
+    <!-- Botón para volver al menú principal -->
     <div class="text-center mt-4">
-        <a href="/" class="btn btn-primary">Volver al menu</a>
+        <a href="/" class="btn btn-primary">Volver al Menú</a>
     </div>
+
+    <script>
+        // Script para agregar/remover dinámicamente campos de obras sociales
+        
+        document.getElementById('add-obras-sociales').addEventListener('click', function() {
+            const container = document.getElementById('obras-sociales-container');
+            const currentFields = container.querySelectorAll('.input-group').length; // Contamos los campos existentes
+            
+            // Restricción: si ya hay 2 campos, no se agrega otro
+            if (currentFields >= 2) {
+                alert("Solo puedes agregar hasta 2 obras sociales.");
+                return; // No agrega más campos si ya hay 2
+            }
+            
+            const newField = document.createElement('div');
+            newField.classList.add('input-group', 'mb-2');
+            newField.innerHTML = `
+                <input type="text" name="obras_sociales[][nombre]" class="form-control" placeholder="Nombre de la obra social">
+                <input type="text" name="obras_sociales[][num_afiliado]" class="form-control" placeholder="Número de afiliado">
+                <button type="button" class="btn btn-danger remove-obras-sociales">X</button>
+            `;
+            container.appendChild(newField);
+    
+            newField.querySelector('.remove-obras-sociales').addEventListener('click', function() {
+                container.removeChild(newField);
+            });
+        });
+    
+        document.querySelectorAll('.remove-obras-sociales').forEach(button => {
+            button.addEventListener('click', function() {
+                button.parentElement.remove();
+            });
+        });
+    </script>
+    
 </body>
 </html>
