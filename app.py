@@ -180,10 +180,16 @@ def agregar_paciente():
     domicilio = request.form.get('domicilio')
     fecha_nacimiento = datetime.strptime(request.form.get('fecha_nacimiento'), '%Y-%m-%d')
     ocupacion = request.form.get('ocupacion')
-    obra_social_1 = request.form.get('obras_sociales[0][nombre]')
-    num_afiliado_1 = request.form.get('obras_sociales[0][num_afiliado]')
-    obra_social_2 = request.form.get('obras_sociales[1][nombre]')
-    num_afiliado_2 = request.form.get('obras_sociales[1][num_afiliado]')
+    
+    # Obtener obras sociales correctamente
+    obras_sociales = request.form.getlist('obras_sociales[][nombre]')
+    num_afiliados = request.form.getlist('obras_sociales[][num_afiliado]')
+
+    # Validar si hay al menos una obra social
+    obra_social_1 = obras_sociales[0] if len(obras_sociales) > 0 and obras_sociales[0] else None
+    num_afiliado_1 = num_afiliados[0] if len(num_afiliados) > 0 and num_afiliados[0] else None
+    obra_social_2 = obras_sociales[1] if len(obras_sociales) > 1 and obras_sociales[1] else None
+    num_afiliado_2 = num_afiliados[1] if len(num_afiliados) > 1 and num_afiliados[1] else None
     
     # Creamos el nuevo paciente con los datos recibidos
     paciente = Paciente(
