@@ -29,6 +29,9 @@ Para ejecutarlos
 ./install.sh
 ./boot.sh
 ```
+## Documentacion 📝📝
+1. El codigo esta comentado exhaustivamente
+2. Tambien cuenta con CHANGELOG [⏳ Ver el CHANGELOG](CHANGELOG.md).
 ## Tecnologías usadas
 ### ⚙️ Backend ⚙️
 - **Python**
