@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Paciente - Consultorio Salvatore, Rivero</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/lux/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+</head>
+<body>
+    <main class="container pd-4">
+        <h1 class="display-2 text-center mt-4">Editar Paciente</h1>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Información del Paciente</h3>
+                    </div>
+                    <div class="card-body">
+                        <form action="/actualizar_paciente/{{ paciente.id }}" method="post">
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label for="nombre">Nombre</label>
+                                    <input type="text" class="form-control" id="nombre" name="nombre" 
+                                           value="{{ paciente.nombre }}" required>
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label for="apellido">Apellido</label>
+                                    <input type="text" class="form-control" id="apellido" name="apellido" 
+                                           value="{{ paciente.apellido }}" required>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label for="dni">DNI</label>
+                                    <input type="text" class="form-control" id="dni" name="dni" 
+                                           value="{{ paciente.dni }}">
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label for="sexo">Sexo</label>
+                                    <select class="form-control" id="sexo" name="sexo">
+                                        <option value="">Seleccionar</option>
+                                        <option value="Masculino" {% if paciente.sexo == 'Masculino' %}selected{% endif %}>Masculino</option>
+                                        <option value="Femenino" {% if paciente.sexo == 'Femenino' %}selected{% endif %}>Femenino</option>
+                                        <option value="Otro" {% if paciente.sexo == 'Otro' %}selected{% endif %}>Otro</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label for="mail">Email</label>
+                                    <input type="email" class="form-control" id="mail" name="mail" 
+                                           value="{{ paciente.mail }}">
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label for="telefono">Teléfono</label>
+                                    <input type="text" class="form-control" id="telefono" name="telefono" 
+                                           value="{{ paciente.telefono }}">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label for="telefono_celular">Teléfono Celular</label>
+                                    <input type="text" class="form-control" id="telefono_celular" name="telefono_celular" 
+                                           value="{{ paciente.telefono_celular }}">
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label for="nacionalidad">Nacionalidad</label>
+                                    <input type="text" class="form-control" id="nacionalidad" name="nacionalidad" 
+                                           value="{{ paciente.nacionalidad }}">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label for="domicilio">Domicilio</label>
+                                    <input type="text" class="form-control" id="domicilio" name="domicilio" 
+                                           value="{{ paciente.domicilio }}">
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label for="fecha_nacimiento">Fecha de Nacimiento</label>
+                                    <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento" 
+                                           value="{{ paciente.fecha_nacimiento }}">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label for="ocupacion">Ocupación</label>
+                                    <input type="text" class="form-control" id="ocupacion" name="ocupacion" 
+                                           value="{{ paciente.ocupacion }}">
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label for="medico">Médico</label>
+                                    <input type="text" class="form-control" id="medico" name="medico" 
+                                           value="{{ paciente.medico }}">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label for="historia_clinica">Historia Clínica</label>
+                                    <input type="text" class="form-control" id="historia_clinica" name="historia_clinica" 
+                                           value="{{ paciente.historia_clinica }}">
+                                </div>
+                            </div>
+
+                            <h4 class="mt-4">Obras Sociales</h4>
+                            {% for i in range(2) %}
+                            <div class="row">
+                                <div class="col-md-6 form-group">
+                                    <label for="obras_sociales[{{ i }}][nombre]">Obra Social {{ i+1 }} Nombre</label>
+                                    <input type="text" class="form-control" 
+                                           id="obras_sociales[{{ i }}][nombre]" 
+                                           name="obras_sociales[{{ i }}][nombre]"
+                                           value="{{ paciente.obras_sociales[i].nombre if i < paciente.obras_sociales|length else '' }}">
+                                </div>
+                                <div class="col-md-6 form-group">
+                                    <label for="obras_sociales[{{ i }}][num_afiliado]">Número de Afiliado {{ i+1 }}</label>
+                                    <input type="text" class="form-control" 
+                                           id="obras_sociales[{{ i }}][num_afiliado]" 
+                                           name="obras_sociales[{{ i }}][num_afiliado]"
+                                           value="{{ paciente.obras_sociales[i].num_afiliado if i < paciente.obras_sociales|length else '' }}">
+                                </div>
+                            </div>
+                            {% endfor %}
+
+                            <div class="text-center mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg">Guardar Cambios</button>
+                                <a href="/editar_paciente" class="btn btn-secondary btn-lg ml-3">Cancelar</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

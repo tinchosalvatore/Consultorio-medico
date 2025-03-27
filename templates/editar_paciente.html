@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Paciente - Consultorio Salvatore, Rivero</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/lux/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+</head>
+<body>
+    <main class="container pd-4">
+        <h1 class="display-2 text-center mt-4">Editar Paciente</h1>
+
+        <div class="row">
+            <div class="col-md-6 offset-md-3 my-auto">
+                <div class="card">
+                    <div class="card-header">
+                        <h1>Buscar paciente para editar</h1>
+                        <form action="/buscar_paciente_editar" method="post">
+                            <div class="form-group">
+                                <input type="text" name="busqueda" placeholder="Ingrese un dato del paciente" class="form-control" autofocus>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Buscar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if mensaje %}
+        <div class="container mt-4">
+            <div class="row">
+                <div class="col-md-6 offset-md-3">
+                    <div class="alert alert-info text-center">
+                        {{ mensaje }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="container mt-4">
+            {% if resultados_busqueda %}
+            <div class="row g-4">
+                {% for paciente in resultados_busqueda %}
+                <div class="col-md-6 offset-md-3 my-auto">
+                    <div class="card patient-card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                {{ paciente.nombre }} {{ paciente.apellido }}
+                            </h5>
+                            {% if paciente.dni %}
+                            <li><strong>DNI:</strong> {{ paciente.dni }}</li>
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            <a href="/editar_paciente/{{ paciente.id }}" class="btn btn-primary btn-block">Editar Paciente</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <p class="lead text-muted mt-3">No se encontraron resultados para mostrar.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-secondary">Volver al Inicio</a>
+        </div>
+    </main>
+</body>
+</html>

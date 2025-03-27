@@ -180,10 +180,16 @@ def agregar_paciente():
     domicilio = request.form.get('domicilio')
     fecha_nacimiento = datetime.strptime(request.form.get('fecha_nacimiento'), '%Y-%m-%d')
     ocupacion = request.form.get('ocupacion')
-    obra_social_1 = request.form.get('obras_sociales[0][nombre]')
-    num_afiliado_1 = request.form.get('obras_sociales[0][num_afiliado]')
-    obra_social_2 = request.form.get('obras_sociales[1][nombre]')
-    num_afiliado_2 = request.form.get('obras_sociales[1][num_afiliado]')
+    
+    # Obtener obras sociales correctamente
+    obras_sociales = request.form.getlist('obras_sociales[][nombre]')
+    num_afiliados = request.form.getlist('obras_sociales[][num_afiliado]')
+
+    # Validar si hay al menos una obra social
+    obra_social_1 = obras_sociales[0] if len(obras_sociales) > 0 and obras_sociales[0] else None
+    num_afiliado_1 = num_afiliados[0] if len(num_afiliados) > 0 and num_afiliados[0] else None
+    obra_social_2 = obras_sociales[1] if len(obras_sociales) > 1 and obras_sociales[1] else None
+    num_afiliado_2 = num_afiliados[1] if len(num_afiliados) > 1 and num_afiliados[1] else None
     
     # Creamos el nuevo paciente con los datos recibidos
     paciente = Paciente(
@@ -212,6 +218,170 @@ def agregar_paciente():
     # Confirmamos que el paciente se agrego correctamente
     mensaje = "El paciente se agrego correctamente"
     return render_template('nuevo_paciente.html', mensaje=mensaje)
+
+@app.route('/ultimo_paciente')
+def ultimo_paciente():
+    # Obtener el último paciente añadido
+    ultimo = Paciente.query.order_by(Paciente.paciente_id.desc()).first()
+    
+    if not ultimo:
+        return render_template('ultimo_paciente.html', paciente=None, mensaje="No hay pacientes registrados.")
+    
+    # Preparar los datos del último paciente de manera similar a la búsqueda
+    obras_sociales = []
+    if ultimo.obra_social_1:
+        obras_sociales.append({'nombre': ultimo.obra_social_1, 'num_afiliado': ultimo.num_afiliado_1})
+    if ultimo.obra_social_2:
+        obras_sociales.append({'nombre': ultimo.obra_social_2, 'num_afiliado': ultimo.num_afiliado_2})
+
+    paciente = {
+        'id': ultimo.paciente_id,
+        'medico': ultimo.medico,
+        'historia_clinica': ultimo.historia_clinica,
+        'nombre': ultimo.nombre_paciente,
+        'apellido': ultimo.apellido,
+        'dni': ultimo.dni,
+        'sexo': ultimo.sexo,
+        'mail': ultimo.mail,
+        'telefono': ultimo.telefono,
+        'telefono_celular': ultimo.telefono_celular,
+        'nacionalidad': ultimo.nacionalidad,
+        'domicilio': ultimo.domicilio,
+        'fecha_nacimiento': ultimo.fecha_nacimiento,
+        'ocupacion': ultimo.ocupacion,
+        'obras_sociales': obras_sociales
+    }
+    
+    return render_template('ultimo_paciente.html', paciente=paciente)
+
+@app.route('/editar_paciente', methods=['GET'])
+def mostrar_editar_paciente():
+    # Render the search page for editing patients
+    return render_template('editar_paciente.html', resultados_busqueda=[], mensaje=None)
+
+@app.route('/buscar_paciente_editar', methods=['POST'])
+def buscar_paciente_editar():
+    busqueda = request.form.get('busqueda')
+
+    # Query to find patients matching the search
+    pacientes = Paciente.query.filter(
+            (Paciente.nombre_paciente.ilike(f"%{busqueda}%")) |
+            (Paciente.apellido.ilike(f"%{busqueda}%")) |
+            (Paciente.dni.ilike(f"%{busqueda}%")) |
+            (Paciente.mail.ilike(f"%{busqueda}%")) |
+            (Paciente.telefono.ilike(f"%{busqueda}%")) |
+            (Paciente.domicilio.ilike(f"%{busqueda}%")) |
+            (Paciente.ocupacion.ilike(f"%{busqueda}%"))
+        ).all()
+    
+    resultados = []
+    for paciente in pacientes:
+        obras_sociales = []
+        if paciente.obra_social_1:
+            obras_sociales.append({'nombre': paciente.obra_social_1, 'num_afiliado': paciente.num_afiliado_1})
+        if paciente.obra_social_2:
+            obras_sociales.append({'nombre': paciente.obra_social_2, 'num_afiliado': paciente.num_afiliado_2})
+
+        resultado = {
+            'id': paciente.paciente_id,  # Important: Include ID for editing
+            'medico': paciente.medico,
+            'historia_clinica': paciente.historia_clinica,
+            'nombre': paciente.nombre_paciente,
+            'apellido': paciente.apellido,
+            'dni': paciente.dni,
+            'sexo': paciente.sexo,
+            'mail': paciente.mail,
+            'telefono': paciente.telefono,
+            'telefono_celular': paciente.telefono_celular,
+            'nacionalidad': paciente.nacionalidad,
+            'domicilio': paciente.domicilio,
+            'fecha_nacimiento': paciente.fecha_nacimiento,
+            'ocupacion': paciente.ocupacion,
+            'obras_sociales': obras_sociales
+        }
+        resultados.append(resultado)
+
+    # If no results, show an alert message
+    mensaje = "No se encontraron pacientes con esa búsqueda" if not resultados else None
+    return render_template('editar_paciente.html', resultados_busqueda=resultados, mensaje=mensaje)
+
+
+@app.route('/editar_paciente/<int:paciente_id>', methods=['GET'])
+def formulario_editar_paciente(paciente_id):
+    # Find the patient by ID
+    paciente = Paciente.query.get_or_404(paciente_id)
+    
+    # Prepare obras sociales data
+    obras_sociales = []
+    if paciente.obra_social_1:
+        obras_sociales.append({
+            'nombre': paciente.obra_social_1, 
+            'num_afiliado': paciente.num_afiliado_1
+        })
+    if paciente.obra_social_2:
+        obras_sociales.append({
+            'nombre': paciente.obra_social_2, 
+            'num_afiliado': paciente.num_afiliado_2
+        })
+    
+    return render_template('formulario_editar_paciente.html', paciente={
+        'id': paciente.paciente_id,
+        'medico': paciente.medico,
+        'historia_clinica': paciente.historia_clinica,
+        'nombre': paciente.nombre_paciente,
+        'apellido': paciente.apellido,
+        'dni': paciente.dni,
+        'sexo': paciente.sexo,
+        'mail': paciente.mail,
+        'telefono': paciente.telefono,
+        'telefono_celular': paciente.telefono_celular,
+        'nacionalidad': paciente.nacionalidad,
+        'domicilio': paciente.domicilio,
+        'fecha_nacimiento': paciente.fecha_nacimiento,
+        'ocupacion': paciente.ocupacion,
+        'obras_sociales': obras_sociales
+    })
+
+@app.route('/actualizar_paciente/<int:paciente_id>', methods=['POST'])
+def actualizar_paciente(paciente_id):
+    try:
+        # Find the patient by ID
+        paciente = Paciente.query.get_or_404(paciente_id)
+        
+        # Update patient fields from form
+        paciente.medico = request.form.get('medico')
+        paciente.historia_clinica = request.form.get('historia_clinica')
+        paciente.nombre_paciente = request.form.get('nombre')
+        paciente.apellido = request.form.get('apellido')
+        paciente.dni = request.form.get('dni')
+        paciente.sexo = request.form.get('sexo')
+        paciente.mail = request.form.get('mail')
+        paciente.telefono = request.form.get('telefono')
+        paciente.telefono_celular = request.form.get('telefono_celular')
+        paciente.nacionalidad = request.form.get('nacionalidad')
+        paciente.domicilio = request.form.get('domicilio')
+        paciente.fecha_nacimiento = request.form.get('fecha_nacimiento')
+        paciente.ocupacion = request.form.get('ocupacion')
+        
+        # Handle obras sociales
+        paciente.obra_social_1 = request.form.get('obras_sociales[0][nombre]', '')
+        paciente.num_afiliado_1 = request.form.get('obras_sociales[0][num_afiliado]', '')
+        paciente.obra_social_2 = request.form.get('obras_sociales[1][nombre]', '')
+        paciente.num_afiliado_2 = request.form.get('obras_sociales[1][num_afiliado]', '')
+        
+        # Commit changes
+        db.session.commit()
+        
+        # Success message
+        mensaje = f"Paciente {paciente.nombre_paciente} {paciente.apellido} actualizado correctamente"
+        return render_template('editar_paciente.html', mensaje=mensaje, resultados_busqueda=[])
+    
+    except Exception as e:
+        # Rollback in case of error
+        db.session.rollback()
+        mensaje = f"Ocurrió un error al actualizar el paciente: {str(e)}"
+        return render_template('editar_paciente.html', mensaje=mensaje, resultados_busqueda=[])
+    
 
 @app.route('/eliminar_paciente', methods=['GET'])
 def mostrar_eliminar_paciente():
